@@ -4,19 +4,29 @@
 
 ![Superpro Shutter Card](example.png)
 
-**Status**: v0.5 - test harness (Vitest + Playwright + Rollup pipeline, CI green-bar)
+**Status**: v1.0 - HACS default store
 **Upstream base**: [marcelhoogantink/enhanced-shutter-card](https://github.com/marcelhoogantink/enhanced-shutter-card) @ v1.5.2
 **Author**: Stefan Volk ([@f17mkx](https://github.com/f17mkx))
 
 ## Install
 
-Add this repo as a HACS Custom Repository:
+### Via HACS (recommended)
 
-```
-HACS → Custom Repositories → https://github.com/f17mkx/superpro-shutter-card → Dashboard
+1. Open HACS in Home Assistant
+2. Search for "Superpro Shutter Card"
+3. Download
+4. Restart HA (or refresh resources)
+
+### Manual
+
+Drop `dist/superpro-shutter-card.js` into `<config>/www/community/superpro-shutter-card/`, then add it as a Lovelace resource:
+
+```yaml
+url: /hacsfiles/superpro-shutter-card/superpro-shutter-card.js
+type: module
 ```
 
-Then in your Lovelace YAML:
+### Use it in your Lovelace YAML
 
 ```yaml
 type: custom:superpro-shutter-card
@@ -44,8 +54,8 @@ For full configuration options see the upstream [enhanced-shutter-card docs](htt
 - **v0.3** - Accessibility + clean console ✅
 - **v0.4** - i18n (DE/EN/FR/ES) ✅
 - **v0.5** - Test harness (Vitest + Playwright + Rollup build, CI green-bar) ✅
-- **v0.6** - Performance budget (bundle <100KB gzipped, render memoisation)
-- **v1.0** - Submit to HACS default store + Reddit announcement
+- **v1.0** - HACS default store submission + public launch ✅
+- **v1.x** - Performance budget (bundle <100KB gzipped, render memoisation), additional locales (it/nl/pt), translation file split
 
 ### v0.2 theming knobs
 

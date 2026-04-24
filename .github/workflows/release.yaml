@@ -1,0 +1,63 @@
+name: Release
+
+# Triggered when a GitHub Release is published. Builds the card from src/,
+# stamps the release tag into manifest.json + the dist VERSION constant,
+# and attaches both the bundled .js and a zip of dist/ to the release so
+# HACS can download a versioned artefact.
+on:
+  release:
+    types: [published]
+
+permissions: {}
+
+jobs:
+  release:
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Node 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      # Stamp the release tag into manifest.json so HACS sees a real version.
+      # The tag includes the leading 'v' (e.g. v1.0.0); manifest version
+      # convention is the same string for grep-ability.
+      - name: Stamp version in manifest.json
+        shell: bash
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          node -e "const fs=require('fs');const m=JSON.parse(fs.readFileSync('manifest.json','utf8'));m.version='${TAG#v}';fs.writeFileSync('manifest.json',JSON.stringify(m,null,2)+'\n');"
+
+      # Stamp the same tag into src/ so the runtime banner matches the release.
+      - name: Stamp VERSION in src/
+        shell: bash
+        run: |
+          TAG="${{ github.event.release.tag_name }}"
+          sed -i "s/const VERSION = 'v[0-9.]\+';/const VERSION = '${TAG}';/" src/superpro-shutter-card.js
+
+      - name: Build dist/
+        run: npm run build
+
+      # ZIP everything under dist/ so HACS can download a single asset that
+      # drops into config/www/community/superpro-shutter-card/ as-is.
+      - name: ZIP dist/
+        shell: bash
+        run: |
+          cd dist
+          zip -r "../superpro-shutter-card.zip" .
+
+      - name: Upload artefacts to release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            superpro-shutter-card.zip
+            dist/superpro-shutter-card.js
