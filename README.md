@@ -4,7 +4,7 @@
 
 ![Superpro Shutter Card](example.png)
 
-**Status**: v0.2 - first signature feature: dark-mode theming (CSS tokens + PNG filter)
+**Status**: v0.3 - accessibility pass + clean console (ARIA, focus, live-region, silenced expected-DOM warnings)
 **Upstream base**: [marcelhoogantink/enhanced-shutter-card](https://github.com/marcelhoogantink/enhanced-shutter-card) @ v1.5.2
 **Author**: Stefan Volk ([@f17mkx](https://github.com/f17mkx))
 
@@ -41,7 +41,7 @@ For full configuration options see the upstream [enhanced-shutter-card docs](htt
 
 - **v0.1** - Rebranded fork of enhanced-shutter-card v1.5.2, no behavior change ✅
 - **v0.2** - Dark-mode theming (CSS theme tokens + PNG dark-filter) ✅
-- **v0.3** - Accessibility + clean console
+- **v0.3** - Accessibility + clean console ✅
 - **v0.4** - i18n + performance
 - **v0.5** - Test harness
 - **v1.0** - Submit to HACS default store + Reddit announcement
@@ -59,6 +59,21 @@ The card now honours these CSS custom properties. Set them in your HA theme YAML
 | `--esc-dark-asset-filter` | `brightness(0.82) contrast(1.08) saturate(0.92)` | CSS filter applied to legacy PNG assets under `prefers-color-scheme: dark` |
 
 Opt out of the dark filter for a single card: set `data-force-light="1"` on the card element. Force the filter on regardless of OS pref: `data-force-dark="1"`.
+
+### v0.3 a11y knobs
+
+The card is now navigable by keyboard, announces position changes politely to screen readers, and stops emitting harmless console warnings in panel-view dashboards.
+
+| Aspect | Behaviour |
+|---|---|
+| Keyboard focus ring | `outline: 2px solid var(--focus-ring-color, currentColor)` on `:focus-visible` only (mouse clicks stay clean) |
+| ARIA labels | Up / Stop / Down / Tilt / Partial / position-grid buttons each carry `aria-label` mirroring the localised tooltip; decorative icons are `aria-hidden="true"` |
+| Live region | A visually-hidden `role="status" aria-live="polite"` element announces "{Friendly name}: {position text}" on settled-state changes, debounced 500ms so dragging or rapid streams don't spam |
+| Lock indicator | `passive_mode: true` renders the lock icon with `role="img" aria-label="locked"` |
+| Console hygiene | The two upstream warnings „Could not find div.card" and „Could not find grid container" are now silently no-op'd in panel layouts where they're expected. Set `SILENCE = false` at the top of `dist/superpro-shutter-card.js` to bring them back for debugging |
+| Group label | Each shutter is wrapped in `role="group" aria-label="{Friendly name}"` so screen readers can navigate by entity |
+
+Tested manually with macOS VoiceOver against an HA dashboard. v0.5's Playwright harness will codify this as automated regression coverage.
 
 ## Development
 
