@@ -42,10 +42,10 @@ TBD - build tooling (vite/bun + lit-based custom element) lands in v0.1.
 
 Upstream lineage:
 
-- `Deejayfool/hass-shutter-card` - original card (2022, MIT)
-- `marcelhoogantink/enhanced-shutter-card` - active fork with Tilt + presets (2024-2026, MIT)
-- `f17mkx/superpro-shutter-card` - this branded fork adding signature features (2026-, MIT)
+- `Deejayfool/hass-shutter-card` - original card (2022-)
+- `marcelhoogantink/enhanced-shutter-card` - active fork with Tilt + presets (2024-, GPL-3.0)
+- `f17mkx/superpro-shutter-card` - this branded fork adding signature features (2026-, GPL-3.0)
 
 ## License
 
-MIT - see [LICENSE](LICENSE).
+GPL-3.0-or-later - see [LICENSE](LICENSE). Our direct upstream `enhanced-shutter-card` is GPL-3.0 as of its 2024-10 initial commit; this fork inherits that license.
