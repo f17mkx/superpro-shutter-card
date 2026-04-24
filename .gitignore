@@ -3,7 +3,9 @@ node_modules/
 .pnpm-store/
 
 # Build output
-dist/
+# NOTE: dist/ IS the shipped artifact for this HACS card - upstream ships
+# source-in-dist (no build step). dist/ stays tracked. If v0.2+ introduces
+# a real build pipeline, revisit this.
 build/
 *.tsbuildinfo
 
