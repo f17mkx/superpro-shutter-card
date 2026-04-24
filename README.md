@@ -2,9 +2,29 @@
 
 > Branded Home Assistant Lovelace card for animated shutter/cover control. First-class dark-mode theming, accessibility, and internationalisation.
 
-**Status**: planning phase, scaffold only. v0.1 rebrand work in progress.
-**Upstream base**: [marcelhoogantink/enhanced-shutter-card](https://github.com/marcelhoogantink/enhanced-shutter-card)
+![Superpro Shutter Card](example.png)
+
+**Status**: v0.1 - rebranded fork of `enhanced-shutter-card` v1.5.2, no behavior change
+**Upstream base**: [marcelhoogantink/enhanced-shutter-card](https://github.com/marcelhoogantink/enhanced-shutter-card) @ v1.5.2
 **Author**: Stefan Volk ([@f17mkx](https://github.com/f17mkx))
+
+## Install
+
+Add this repo as a HACS Custom Repository:
+
+```
+HACS → Custom Repositories → https://github.com/f17mkx/superpro-shutter-card → Dashboard
+```
+
+Then in your Lovelace YAML:
+
+```yaml
+type: custom:superpro-shutter-card
+entities:
+  - entity: cover.your_shutter
+```
+
+For full configuration options see the upstream [enhanced-shutter-card docs](https://github.com/marcelhoogantink/enhanced-shutter-card#configuration) - all YAML options are forward-compatible; only the `type:` prefix changes from `custom:enhanced-shutter-card` to `custom:superpro-shutter-card`.
 
 ## Why this fork
 
@@ -26,26 +46,20 @@
 - **v0.5** - Test harness
 - **v1.0** - Submit to HACS default store + Reddit announcement
 
-## Install (once v0.1 ships)
-
-Not available yet. After v0.1:
-
-```
-HACS → Custom Repositories → https://github.com/f17mkx/superpro-shutter-card → Dashboard
-```
-
 ## Development
 
-TBD - build tooling (vite/bun + lit-based custom element) lands in v0.1.
+v0.1 inherits upstream's source-in-dist layout: the shipped `dist/superpro-shutter-card.js` is readable Lit source, not a minified build. No `npm install` / `rollup` step exists yet. A proper build pipeline lands alongside v0.5 (test harness).
+
+To try a local change: edit `dist/superpro-shutter-card.js`, then `scp` to `/config/www/` on your HA instance and reload.
 
 ## Credits
 
 Upstream lineage:
 
-- `Deejayfool/hass-shutter-card` - original card (2022, MIT)
-- `marcelhoogantink/enhanced-shutter-card` - active fork with Tilt + presets (2024-2026, MIT)
-- `f17mkx/superpro-shutter-card` - this branded fork adding signature features (2026-, MIT)
+- `Deejayfool/hass-shutter-card` - original card (2022-)
+- `marcelhoogantink/enhanced-shutter-card` - active fork with Tilt + presets (2024-, GPL-3.0)
+- `f17mkx/superpro-shutter-card` - this branded fork adding signature features (2026-, GPL-3.0)
 
 ## License
 
-MIT - see [LICENSE](LICENSE).
+GPL-3.0-or-later - see [LICENSE](LICENSE). Our direct upstream `enhanced-shutter-card` is GPL-3.0 as of its 2024-10 initial commit; this fork inherits that license.
