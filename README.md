@@ -4,7 +4,7 @@
 
 ![Superpro Shutter Card](example.png)
 
-**Status**: v0.1 - rebranded fork of `enhanced-shutter-card` v1.5.2, no behavior change
+**Status**: v0.2 - first signature feature: dark-mode theming (CSS tokens + PNG filter)
 **Upstream base**: [marcelhoogantink/enhanced-shutter-card](https://github.com/marcelhoogantink/enhanced-shutter-card) @ v1.5.2
 **Author**: Stefan Volk ([@f17mkx](https://github.com/f17mkx))
 
@@ -39,12 +39,26 @@ For full configuration options see the upstream [enhanced-shutter-card docs](htt
 
 ## Roadmap
 
-- **v0.1** - Rebranded fork of enhanced-shutter-card v1.5.2, no behavior change
-- **v0.2** - Dark-mode theming (signature feature)
+- **v0.1** - Rebranded fork of enhanced-shutter-card v1.5.2, no behavior change ✅
+- **v0.2** - Dark-mode theming (CSS theme tokens + PNG dark-filter) ✅
 - **v0.3** - Accessibility + clean console
 - **v0.4** - i18n + performance
 - **v0.5** - Test harness
 - **v1.0** - Submit to HACS default store + Reddit announcement
+
+### v0.2 theming knobs
+
+The card now honours these CSS custom properties. Set them in your HA theme YAML to override:
+
+| Property | Default | Purpose |
+|---|---|---|
+| `--esc-tilt-container-bg` | `var(--secondary-background-color, #f9f9f9)` | Tilt widget background |
+| `--esc-tilt-container-border` | `var(--divider-color, grey)` | Tilt widget border |
+| `--esc-tilt-line-color` | `var(--error-color, red)` | Tilt-angle indicator line |
+| `--esc-movement-overlay-bg` | `rgba(0,0,0,0.3)` | "Shutter moving" overlay tint |
+| `--esc-dark-asset-filter` | `brightness(0.82) contrast(1.08) saturate(0.92)` | CSS filter applied to legacy PNG assets under `prefers-color-scheme: dark` |
+
+Opt out of the dark filter for a single card: set `data-force-light="1"` on the card element. Force the filter on regardless of OS pref: `data-force-dark="1"`.
 
 ## Development
 
