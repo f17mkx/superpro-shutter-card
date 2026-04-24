@@ -4,7 +4,7 @@
 
 ![Superpro Shutter Card](example.png)
 
-**Status**: v0.4 - i18n (DE/EN/FR/ES, locale-reactive, locale-aware percent formatting)
+**Status**: v0.5 - test harness (Vitest + Playwright + Rollup pipeline, CI green-bar)
 **Upstream base**: [marcelhoogantink/enhanced-shutter-card](https://github.com/marcelhoogantink/enhanced-shutter-card) @ v1.5.2
 **Author**: Stefan Volk ([@f17mkx](https://github.com/f17mkx))
 
@@ -43,7 +43,8 @@ For full configuration options see the upstream [enhanced-shutter-card docs](htt
 - **v0.2** - Dark-mode theming (CSS theme tokens + PNG dark-filter) ✅
 - **v0.3** - Accessibility + clean console ✅
 - **v0.4** - i18n (DE/EN/FR/ES) ✅
-- **v0.5** - Test harness + performance
+- **v0.5** - Test harness (Vitest + Playwright + Rollup build, CI green-bar) ✅
+- **v0.6** - Performance budget (bundle <100KB gzipped, render memoisation)
 - **v1.0** - Submit to HACS default store + Reddit announcement
 
 ### v0.2 theming knobs
@@ -95,13 +96,22 @@ The card follows your HA UI language automatically: switch HA to Deutsch, Franç
 4. Test locally: change HA → Profile → Language to your new locale, reload the dashboard, eyeball each shutter card.
 5. PR with a screenshot per state (open / partial / closed / locked).
 
-A future v0.5 release will split these into `translations/<lang>.json` files behind a build pipeline; until then the inline dict keeps the zero-build install simple.
+A future v0.6+ release will split these into `translations/<lang>.json` files behind the build pipeline; until then the inline dict keeps the per-card YAML migration simple.
 
 ## Development
 
-v0.1 inherits upstream's source-in-dist layout: the shipped `dist/superpro-shutter-card.js` is readable Lit source, not a minified build. No `npm install` / `rollup` step exists yet. A proper build pipeline lands alongside v0.5 (test harness).
+v0.5 introduced a proper toolchain: source lives in `src/`, Rollup bundles it into `dist/superpro-shutter-card.js` (Lit 3.x inlined), and CI runs the full test suite on every PR.
 
-To try a local change: edit `dist/superpro-shutter-card.js`, then `scp` to `/config/www/` on your HA instance and reload.
+```bash
+npm install         # one-time
+npm run build       # src/ -> dist/superpro-shutter-card.js (IIFE, ~165KB)
+npm test            # vitest unit suite (60+ tests on pure logic)
+npm run test:e2e    # playwright smoke against an HA-stub HTML page
+```
+
+`dist/` is committed - HACS users grab it raw, no install step on their side. CI rebuilds and byte-compares against the committed copy to catch drift (see `scripts/check-dist-drift.mjs`).
+
+To iterate against a live HA instance: `npm run build`, then `scp dist/superpro-shutter-card.js dist/images/* hassio:/config/www/community/superpro-shutter-card/` and reload.
 
 ## Credits
 
