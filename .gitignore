@@ -3,9 +3,10 @@ node_modules/
 .pnpm-store/
 
 # Build output
-# NOTE: dist/ IS the shipped artifact for this HACS card - upstream ships
-# source-in-dist (no build step). dist/ stays tracked. If v0.2+ introduces
-# a real build pipeline, revisit this.
+# NOTE: dist/ IS the shipped artifact for this HACS card - committed so
+# users without a build step still work. v0.5 added a Rollup pipeline that
+# rebuilds dist/superpro-shutter-card.js from src/, but the output is the
+# same bytes that get committed (CI guards against drift).
 build/
 *.tsbuildinfo
 

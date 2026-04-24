@@ -4,5 +4,5 @@
   "codeowners": ["@f17mkx"],
   "documentation": "https://github.com/f17mkx/superpro-shutter-card/blob/main/README.md",
   "issue_tracker": "https://github.com/f17mkx/superpro-shutter-card/issues",
-  "version": "0.4.0"
+  "version": "0.5.0"
 }
