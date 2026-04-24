@@ -4,7 +4,7 @@
 
 ![Superpro Shutter Card](example.png)
 
-**Status**: v0.3 - accessibility pass + clean console (ARIA, focus, live-region, silenced expected-DOM warnings)
+**Status**: v0.4 - i18n (DE/EN/FR/ES, locale-reactive, locale-aware percent formatting)
 **Upstream base**: [marcelhoogantink/enhanced-shutter-card](https://github.com/marcelhoogantink/enhanced-shutter-card) @ v1.5.2
 **Author**: Stefan Volk ([@f17mkx](https://github.com/f17mkx))
 
@@ -42,8 +42,8 @@ For full configuration options see the upstream [enhanced-shutter-card docs](htt
 - **v0.1** - Rebranded fork of enhanced-shutter-card v1.5.2, no behavior change ✅
 - **v0.2** - Dark-mode theming (CSS theme tokens + PNG dark-filter) ✅
 - **v0.3** - Accessibility + clean console ✅
-- **v0.4** - i18n + performance
-- **v0.5** - Test harness
+- **v0.4** - i18n (DE/EN/FR/ES) ✅
+- **v0.5** - Test harness + performance
 - **v1.0** - Submit to HACS default store + Reddit announcement
 
 ### v0.2 theming knobs
@@ -74,6 +74,28 @@ The card is now navigable by keyboard, announces position changes politely to sc
 | Group label | Each shutter is wrapped in `role="group" aria-label="{Friendly name}"` so screen readers can navigate by entity |
 
 Tested manually with macOS VoiceOver against an HA dashboard. v0.5's Playwright harness will codify this as automated regression coverage.
+
+### v0.4 i18n (DE / EN / FR / ES)
+
+The card follows your HA UI language automatically: switch HA to Deutsch, Français, or Español and every label re-renders without a page reload. Other locales fall back to English.
+
+| Source | What's translated |
+|---|---|
+| `hass.localize()` (HA core) | Cover states (`open`, `closed`, `opening`, `closing`), action verbs on the up/stop/down/tilt buttons, `unavailable` |
+| Card-private `TRANSLATIONS` dict | "Battery"/"Signal" aria-prefixes, "locked" (passive-mode lock), "Fully open / closed", "Partially open / closed", "Tilt" position-text prefix |
+| `Intl.NumberFormat(locale, { style: 'percent' })` | Position percentage display - `de` and `fr` get the locale-correct non-breaking space ("55 %"); `en` and `es` stay compact ("55%") |
+
+**Out of scope on purpose:** preset config tokens (`awning`, `curtain`, `roller-shutter`, `shade`, `blind`) are NOT translated - they are YAML config keys and translating them would break existing users' dashboards. Console warnings stay English (developer-facing).
+
+#### Contributing a new locale
+
+1. Open `dist/superpro-shutter-card.js`, find the `TRANSLATIONS` const (just below `LOCALIZE_TEXT`).
+2. Add a new top-level entry keyed by ISO 639-1 lowercase code (e.g. `it`, `nl`, `pt`).
+3. Translate all keys present in the `en` block - the lookup is `TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS.en?.[key]`, so any missing key silently falls back to English (graceful, but you do want full coverage).
+4. Test locally: change HA → Profile → Language to your new locale, reload the dashboard, eyeball each shutter card.
+5. PR with a screenshot per state (open / partial / closed / locked).
+
+A future v0.5 release will split these into `translations/<lang>.json` files behind a build pipeline; until then the inline dict keeps the zero-build install simple.
 
 ## Development
 

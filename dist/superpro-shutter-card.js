@@ -1,5 +1,5 @@
 
-const VERSION = 'v0.3.0';
+const VERSION = 'v0.4.0';
 const DEBUG = false;
 // v0.3 a11y: SILENCE gates noisy paths that previously emitted console.warn for
 // expected-DOM-misses (panel views, dashboard layouts without a div.card ancestor).
@@ -484,6 +484,61 @@ const LOCALIZE_TEXT= {
   [ACTION_SHUTTER_CLOSE_TILT]: 'ui.card.cover.close_cover_tilt',
 
   [UNAVAILABLE]: 'state.default.unavailable',
+};
+
+// v0.4 i18n: card-private string dict for the four locales covering >80% of HA's
+// active user base. We deliberately delegate cover states (open/closed/opening/
+// closing) and action verbs (open_cover, close_cover, stop_cover, *_tilt) to HA's
+// own `hass.localize()` via LOCALIZE_TEXT above - those already ship in every HA
+// language. This dict only carries strings HA core does NOT translate: the
+// "Battery"/"Signal" aria-prefixes, "locked" (passive-mode lock), and the
+// composite Fully/Partially open/closed labels used on the partial-open button
+// and the 3x2 position grid. Adding a new locale = add a key here. Falls back to
+// `en` for any locale not in the dict (graceful, no broken UI for non-EU users).
+// Preset config tokens (awning/curtain/roller-shutter/shade/blind) deliberately
+// stay untranslated because they are config keys, not labels - translating them
+// would break existing users' YAML.
+const TRANSLATIONS = {
+  en: {
+    battery: 'Battery',
+    signal: 'Signal',
+    locked: 'locked',
+    fully_open: 'Fully open',
+    fully_closed: 'Fully closed',
+    partially_open: 'Partially open',
+    partially_closed: 'Partially closed',
+    tilt: 'Tilt',
+  },
+  de: {
+    battery: 'Batterie',
+    signal: 'Signal',
+    locked: 'gesperrt',
+    fully_open: 'Vollständig geöffnet',
+    fully_closed: 'Vollständig geschlossen',
+    partially_open: 'Teilweise geöffnet',
+    partially_closed: 'Teilweise geschlossen',
+    tilt: 'Lamellen',
+  },
+  fr: {
+    battery: 'Batterie',
+    signal: 'Signal',
+    locked: 'verrouillé',
+    fully_open: 'Entièrement ouvert',
+    fully_closed: 'Entièrement fermé',
+    partially_open: 'Partiellement ouvert',
+    partially_closed: 'Partiellement fermé',
+    tilt: 'Inclinaison',
+  },
+  es: {
+    battery: 'Batería',
+    signal: 'Señal',
+    locked: 'bloqueado',
+    fully_open: 'Totalmente abierto',
+    fully_closed: 'Totalmente cerrado',
+    partially_open: 'Parcialmente abierto',
+    partially_closed: 'Parcialmente cerrado',
+    tilt: 'Inclinación',
+  },
 };
 
 
@@ -1029,6 +1084,11 @@ class SuperproShutterCardNew extends LitElement{
               const liveEntityFromHass = liveStates[entityId];
               if (liveEntityFromHass) {
                 const cfg = this.localCfgs[entityId];
+                // v0.4 i18n: refresh hass on cfg so getT()/formatPercent() always
+                // read the current locale; also covers HA reconnects where the
+                // hass object identity changes and the captured localize closure
+                // would otherwise be stale.
+                cfg.updateHass(this[propName]);
                 let shutterState = `${liveEntityFromHass.state}-${liveEntityFromHass.attributes.current_position}-${liveEntityFromHass.attributes.current_tilt_position}`;
                 if (shutterState != cfg.shutterState){
                   doUpdate =true;
@@ -2402,6 +2462,10 @@ class shutterCfg {
   #batteryEntity=null;
   #signalEntity=null;
   #localize={};
+  // v0.4 i18n: live hass reference so getT()/formatPercent() always read the
+  // current locale. Refreshed via updateHass() on every parent hass update so
+  // language switches in HA propagate without rebuilding the cfg.
+  #hass=null;
   shutterState = NONE;
   batteryState = NONE;
   signalState = NONE;
@@ -2410,6 +2474,7 @@ class shutterCfg {
   {
     let entityId = this.entityId(escConfig[CONFIG_ENTITY_ID] ? escConfig[CONFIG_ENTITY_ID] : escConfig);
 
+      this.#hass = hass;
       this.#setLocalize(hass.localize);
       this.setCoverEntity(hass,entityId);
 
@@ -2497,6 +2562,44 @@ class shutterCfg {
   }
   getLocalize(text){
     return this.#localize(text);
+  }
+  // v0.4 i18n: refresh the live hass reference (and its localize fn) so that a
+  // user toggling HA's language setting at runtime re-renders the card in the
+  // new locale without page reload. Called from SuperproShutterCardNew's
+  // shouldUpdate() when propName === 'hass'. Also covers the case where HA
+  // swaps the hass object entirely (e.g. on reconnect) - the previous object's
+  // localize() closure could be stale, this rebinds.
+  updateHass(hass){
+    if (!hass) return;
+    this.#hass = hass;
+    this.#setLocalize(hass.localize);
+  }
+  // v0.4 i18n: read a card-private string in the current HA UI locale. Strategy:
+  // take first 2 chars of hass.locale.language (e.g. 'de-DE' → 'de'), look up
+  // TRANSLATIONS[lang]?.[key]. Fall back to en for any locale we haven't shipped
+  // (a Korean user sees English Battery/Signal labels, not a broken key). Final
+  // fallback returns the key itself so missing keys are loud in dev but never
+  // crash the render. Reactive: every render path resolves through this fresh,
+  // and updateHass() keeps #hass current.
+  getT(key){
+    const lang = (this.#hass?.locale?.language || 'en').slice(0,2).toLowerCase();
+    return TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS.en?.[key] ?? key;
+  }
+  // v0.4 i18n: locale-aware percent formatter. Intl.NumberFormat handles the
+  // small but visible details: en/es render "55%" compact, de/fr render "55 %"
+  // with a non-breaking space - users in those locales notice when it's wrong.
+  // Input is the integer percent (0-100) that the rest of the code already
+  // computes; we divide by 100 because Intl percent style expects a fraction.
+  // maximumFractionDigits:0 keeps 50% as "50%" not "50.0%". try/catch guards
+  // against ancient browsers without Intl.NumberFormat (theoretical; HA's min
+  // browser supports it for years).
+  formatPercent(value){
+    const lang = (this.#hass?.locale?.language || 'en').slice(0,2).toLowerCase();
+    try {
+      return new Intl.NumberFormat(lang, { style: 'percent', maximumFractionDigits: 0 }).format(value / 100);
+    } catch {
+      return value + '%';
+    }
   }
   setCoverEntity(hass,entityId){
     this.#coverEntity = entityId ? new haEntity(hass,entityId) : null;
@@ -3094,7 +3197,9 @@ class shutterCfg {
       // position support
       if (typeof position === 'number') {
         if (this.alwaysPercentage()) {
-          text = position + '%';
+          // v0.4 i18n: route the user-facing percent through Intl so de/fr get
+          // their non-breaking-space "55 %" formatting.
+          text = this.formatPercent(position);
 
         }else{
           const UiPosition = this.applyInvertToUiPosition(position)
@@ -3103,9 +3208,11 @@ class shutterCfg {
             if (state != SHUTTER_STATE_PARTIAL_OPEN){
               text = this.getLocalize(LOCALIZE_TEXT[(state)]);
             } else{
-              text = position + '%';
+              // v0.4 i18n: same locale-aware percent for the partial-open case.
+              text = this.formatPercent(position);
             }
           }else{
+            // dev/debug string is intentionally English - it's diagnostic, not user-facing.
             text = `Dev: ${this.getCoverEntity().getState()} (${this.currentDevicePosition()}%)\nCard: ${state} (${position}%)`;
           }
         }
@@ -3132,11 +3239,14 @@ class shutterCfg {
       displayPosition = this.currentUiPosition(displayPosition);
       positionText = this.positionToText(displayPosition);
       if (this.offsetActive()) {
-        positionText += ` (${this.currentUiPosition(position)}%)`;
+        // v0.4 i18n: locale-aware percent for the offset-mode parenthetical.
+        positionText += ` (${this.formatPercent(this.currentUiPosition(position))})`;
       }
       if (this.showTilt() && this.isCoverFeatureActive(ESC_FEATURE_SET_TILT_POSITION)) {
         tiltPosition = this.currentUiTiltPosition(tiltPosition);
-        positionText += ` / Tilt: ${tiltPosition}%`;
+        // v0.4 i18n: localized Tilt label + locale-aware percent. The slash
+        // separator stays as-is across locales (it's punctuation, not a word).
+        positionText += ` / ${this.getT('tilt')}: ${this.formatPercent(tiltPosition)}`;
       }
     }
     return positionText;
@@ -3470,7 +3580,7 @@ class htmlCard{
     return html`
         ${this.cfg.getBatteryEntity() ? html`
           <div class="${ESC_CLASS_TOP_LEFT}" role="img"
-               aria-label="Battery ${this.cfg.batteryLevelText()}">
+               aria-label="${this.cfg.getT('battery')} ${this.cfg.batteryLevelText()}">
             <ha-icon
               icon=${this.cfg.batteryLevelIcon()}
               class="${ESC_CLASS_HA_ICON}"
@@ -3488,7 +3598,7 @@ class htmlCard{
     return html`
         ${this.cfg.getSignalEntity() ? html`
           <div class="${ESC_CLASS_TOP_RIGHT}" role="img"
-               aria-label="Signal ${this.cfg.signalLevelText()}">
+               aria-label="${this.cfg.getT('signal')} ${this.cfg.signalLevelText()}">
             <ha-icon
               class="${ESC_CLASS_HA_ICON}"
               icon=${this.cfg.signalLevelIcon()}
@@ -3516,7 +3626,7 @@ class htmlCard{
           >
             ${this.cfg.friendlyName()}
             ${this.cfg.passiveMode() ? html`
-              <span class="${ESC_CLASS_HA_ICON_LOCK}" role="img" aria-label="locked">
+              <span class="${ESC_CLASS_HA_ICON_LOCK}" role="img" aria-label="${this.cfg.getT('locked')}">
                 <ha-icon icon="mdi:lock" aria-hidden="true"></ha-icon>
               </span>
             `:''}
@@ -3589,11 +3699,11 @@ class htmlCard{
   }
   showButtonPartial(){
     return html`
-      ${this.cfg.partialActive()  /* TODO localize texts */
+      ${this.cfg.partialActive()
         ? html`
           <ha-icon-button
-            label="Partially ${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)} (${SHUTTER_OPEN_PCT- this.cfg.partial()}%)"
-            aria-label="Partially ${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)} (${SHUTTER_OPEN_PCT- this.cfg.partial()}%)"
+            label="${this.cfg.getT(`partially_${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)}`)} (${this.cfg.formatPercent(SHUTTER_OPEN_PCT - this.cfg.partial())})"
+            aria-label="${this.cfg.getT(`partially_${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)}`)} (${this.cfg.formatPercent(SHUTTER_OPEN_PCT - this.cfg.partial())})"
             .disabled=${this.cfg.disabledGlobaly()}
             @click="${()=> this.superproShutter.doOnclick(`${ACTION_SHUTTER_SET_POS}`, this.cfg.calcOffset(this.cfg.partial()))}" >
             <ha-icon class="${ESC_CLASS_HA_ICON}" icon="mdi:arrow-expand-vertical" aria-hidden="true"></ha-icon>
@@ -3719,13 +3829,18 @@ class htmlCard{
       5: 2,  // down
     };
 
+    // v0.4 i18n: position-grid labels (3x2 button cluster). applyInvertOpenClose
+    // returns either 'open' or 'closed' (string token), so getT() composes the
+    // correct localized phrase via the `partially_<token>`/`fully_<token>` keys.
+    // Inversion (e.g. shutters where 100%=closed) flips token but NOT the
+    // composition logic - cfg layer already handles direction semantics.
     const labels={
-      0: `Fully ${this.cfg.applyInvertOpenClose(SHUTTER_STATE_OPEN)}`,
-      1: `Partially ${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)} ( ${this.cfg.invertPosition(pct[1])}% )`,
-      2: `Partially ${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)} ( ${this.cfg.invertPosition(pct[2])}% )`,
-      3: `Partially ${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)} ( ${this.cfg.invertPosition(pct[3])}% )`,
-      4: `Partially ${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)} ( ${this.cfg.invertPosition(pct[4])}% )`,
-      5: `Fully ${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)}`,
+      0: this.cfg.getT(`fully_${this.cfg.applyInvertOpenClose(SHUTTER_STATE_OPEN)}`),
+      1: `${this.cfg.getT(`partially_${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)}`)} ( ${this.cfg.formatPercent(this.cfg.invertPosition(pct[1]))} )`,
+      2: `${this.cfg.getT(`partially_${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)}`)} ( ${this.cfg.formatPercent(this.cfg.invertPosition(pct[2]))} )`,
+      3: `${this.cfg.getT(`partially_${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)}`)} ( ${this.cfg.formatPercent(this.cfg.invertPosition(pct[3]))} )`,
+      4: `${this.cfg.getT(`partially_${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)}`)} ( ${this.cfg.formatPercent(this.cfg.invertPosition(pct[4]))} )`,
+      5: this.cfg.getT(`fully_${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)}`),
     };
 
     const disabled = {
