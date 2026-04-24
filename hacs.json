@@ -1,0 +1,7 @@
+{
+  "name": "Superpro Shutter Card",
+  "filename": "superpro-shutter-card.js",
+  "render_readme": true,
+  "homeassistant": "2024.10.0",
+  "content_in_root": false
+}
