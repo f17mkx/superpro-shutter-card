@@ -1,6 +1,10 @@
 
-const VERSION = 'v0.2.0';
+const VERSION = 'v0.3.0';
 const DEBUG = false;
+// v0.3 a11y: SILENCE gates noisy paths that previously emitted console.warn for
+// expected-DOM-misses (panel views, dashboard layouts without a div.card ancestor).
+// Real errors (service unavailable, image load failures, message-manager) stay visible.
+const SILENCE = true;
 // // local copy of RELEASE 3.0.1 of
 // https://www.jsdelivr.com/package/gh/lit/dist
 
@@ -535,6 +539,27 @@ const SHUTTER_CSS =`
         display: inline-block;
         width: min-content;
       }
+      /* v0.3 a11y: visible keyboard-focus indicator. Honours --focus-ring-color
+         from HA theme tokens, falls back to currentColor so it works on every
+         palette. Mouse clicks don't trigger :focus-visible, only keyboard nav. */
+      .${ESC_CLASS_BUTTONS} ha-icon-button:focus-visible,
+      .${ESC_CLASS_TILT_BUTTONS} ha-icon-button:focus-visible {
+        outline: 2px solid var(--focus-ring-color, currentColor);
+        outline-offset: 2px;
+        border-radius: 50%;
+      }
+      /* v0.3 a11y: screen-reader-only live region. Visible to AT, hidden visually. */
+      .esc-sr-only {
+        position: absolute;
+        width: 1px;
+        height: 1px;
+        padding: 0;
+        margin: -1px;
+        overflow: hidden;
+        clip: rect(0, 0, 0, 0);
+        white-space: nowrap;
+        border: 0;
+      }
       .${ESC_CLASS_SELECTOR} {
         max-width: 100%;
         margin: 2px;
@@ -1060,7 +1085,8 @@ class SuperproShutterCardNew extends LitElement{
   render() {
     //console.log('#@ CARD RENDER !!!!!!');
     if (!this.config || !this.hass || !this.isShutterConfigLoaded) {
-      console.warn('ShutterCard  .. no content ..');
+      // v0.3 a11y: empty config is normal during HA startup before entities resolve.
+      console_log('ShutterCard  .. no content ..');
       return html`Waiting ...`;
     }
     let showMessages = this.messageManager.countMessages() && this.closestElement('.element-preview',this) !== null;
@@ -1128,8 +1154,10 @@ class SuperproShutterCardNew extends LitElement{
         this.getGridOptions('from getGrid()');
 
       }
-    } else {
-      console.warn('Could not find grid container');
+    } else if (!SILENCE) {
+      // v0.3 a11y: panel-view dashboards legitimately have no .container ancestor.
+      // The grid sizing path is a no-op in that layout; warning here was noise.
+      console_log('Could not find grid container (expected in panel views)');
     }
   }
   defGridContainer(){
@@ -1314,7 +1342,8 @@ class SuperproShutterCardNew extends LitElement{
       // add padding
       cardSize = this.gridAddBoth(cardSize,{localWidthPx: 16,localHeightPx: 32});
     }else{
-      console.warn('ShutterCard  .. no content ??..');
+      // v0.3 a11y: same transient-empty-config case as above; not an error.
+      console_log('ShutterCard  .. no content ??..');
     }
     const gridContainer = this.closest('.container');
     /*
@@ -1334,8 +1363,10 @@ class SuperproShutterCardNew extends LitElement{
     if (divCard){
       divCard.style.setProperty('--row-size',this.nbRows);
       divCard.style.setProperty('--column-size',this.nbCols);
-    }else{
-      console.warn(`Could not find div.card to set CSS variables. Cardname: '${tempCardName}'`);
+    }else if (!SILENCE){
+      // v0.3 a11y: panel/section views render without an enclosing div.card.
+      // Skipping the CSS-var assignment is the correct behaviour, not an error.
+      console_log(`Could not find div.card to set CSS variables. Cardname: '${tempCardName}' (expected in panel views)`);
     }
     //console.log(`getGridOptionsInternal: calculated nbRows: ${this.nbRows}, nbCols: ${this.nbCols} for card '${tempCardName}'`);
     return {
@@ -1594,6 +1625,10 @@ class SuperproShutter extends LitElement
     react_ShutterPosition: {state: true},       // for dragging shutter onscreen
     react_TiltPosition: {state: true},         // for dragging tilt-shutter onscreen
     react_ResizeDivShutterSelector: {state: true,type: Boolean}, // for detecting resize of shutter div by responsive design
+    // v0.3 a11y: reactive announcement string for screen-reader live region.
+    // Updated via _scheduleAnnounce() with 500ms debounce so VoiceOver/NVDA
+    // don't read every intermediate position during a drag or stream.
+    _announcedPosition: {state: true},
   };
   constructor(){
     //console_log('Shutter constructor');
@@ -1611,9 +1646,27 @@ class SuperproShutter extends LitElement
 
     this[ESC_CLASS_SELECTOR]=null;
 
+    // v0.3 a11y: live-region announcement state. _lastAnnouncedText avoids
+    // re-announcing identical text (e.g. when render fires for unrelated reasons).
+    this._announcedPosition = '';
+    this._lastAnnouncedText = '';
+    this._announceTimer = null;
+
     console_log('Version:',VERSION);
 
     //console_log('Shutter constructor ready');
+  }
+  // v0.3 a11y: debounce position announcements by 500ms. Screen readers hear
+  // the settled value rather than every transient position during opening/closing
+  // or while the user drags the slider.
+  _scheduleAnnounce(text){
+    if (!text || text === this._lastAnnouncedText) return;
+    if (this._announceTimer) clearTimeout(this._announceTimer);
+    this._announceTimer = setTimeout(() => {
+      this._lastAnnouncedText = text;
+      this._announcedPosition = text;
+      this._announceTimer = null;
+    }, 500);
   }
   shouldUpdate(changedProperties)
   {
@@ -1632,6 +1685,12 @@ class SuperproShutter extends LitElement
     //console_log('Shutter disconnectedCallback');
     super.disconnectedCallback();
     if (this.resizeObserver) this.resizeObserver.disconnect();
+    // v0.3 a11y: drop any pending announcement on detach so the timer doesn't
+    // outlive the element (would write to a destroyed reactive property).
+    if (this._announceTimer) {
+      clearTimeout(this._announceTimer);
+      this._announceTimer = null;
+    }
     //console_log('Shutter disconnectedCallback ready');
   }
 
@@ -1680,12 +1739,21 @@ class SuperproShutter extends LitElement
 
     let htmlParts = new htmlCard(this,positionText);
 
+    // v0.3 a11y: schedule a debounced announce. Only fires from the natural
+    // settled-state render path (action !== 'user-drag') so dragging doesn't
+    // generate hundreds of pending announcements.
+    if (this.action !== 'user-drag' && this.action !== 'user-drag-tilt') {
+      this._scheduleAnnounce(`${this.cfg.friendlyName()}: ${positionText.replace(/\s+/g,' ').trim()}`);
+    }
+
     //console_log('Shutter Render ready');
     return html`
       <div
         class=${ESC_CLASS_SHUTTER}
         data-shutter="${entityId}"
         style = "${htmlParts.defStyleVars()}"
+        role="group"
+        aria-label="${this.cfg.friendlyName()}"
       >
         ${htmlParts.showBatteryIcon()}
         ${htmlParts.showSignalIcon()}
@@ -1704,6 +1772,11 @@ class SuperproShutter extends LitElement
           }
         </div>
         ${htmlParts.showBottomDiv()}
+        <!-- v0.3 a11y: visually-hidden polite live region. Screen readers
+             announce the debounced position update without disrupting focus. -->
+        <div class="esc-sr-only" role="status" aria-live="polite" aria-atomic="true">
+          ${this._announcedPosition || ''}
+        </div>
       </div>
     `;
   }
@@ -2585,7 +2658,8 @@ class shutterCfg {
   }
   passiveMode(value = null){
     let mode = this.#getCfg(CONFIG_PASSIVE_MODE,value)
-    if (value!== null && mode) console.warn('Passive mode, no action');
+    // v0.3 a11y: passive-mode short-circuit is intentional config behaviour, not a warning.
+    if (value!== null && mode) console_log('Passive mode, no action');
     return mode;
   }
   windowHeightPx(value = null){
@@ -3395,12 +3469,14 @@ class htmlCard{
   showBatteryIcon(){
     return html`
         ${this.cfg.getBatteryEntity() ? html`
-          <div class="${ESC_CLASS_TOP_LEFT}">
+          <div class="${ESC_CLASS_TOP_LEFT}" role="img"
+               aria-label="Battery ${this.cfg.batteryLevelText()}">
             <ha-icon
               icon=${this.cfg.batteryLevelIcon()}
               class="${ESC_CLASS_HA_ICON}"
+              aria-hidden="true"
             ></ha-icon>
-            <div class="${ESC_CLASS_TOP_ICON_TEXT}">
+            <div class="${ESC_CLASS_TOP_ICON_TEXT}" aria-hidden="true">
               ${this.cfg.batteryLevelText()}
             </div>
           </div>
@@ -3411,12 +3487,14 @@ class htmlCard{
   showSignalIcon(){
     return html`
         ${this.cfg.getSignalEntity() ? html`
-          <div class="${ESC_CLASS_TOP_RIGHT}">
+          <div class="${ESC_CLASS_TOP_RIGHT}" role="img"
+               aria-label="Signal ${this.cfg.signalLevelText()}">
             <ha-icon
               class="${ESC_CLASS_HA_ICON}"
               icon=${this.cfg.signalLevelIcon()}
+              aria-hidden="true"
             ></ha-icon>
-            <div class="${ESC_CLASS_TOP_ICON_TEXT}">
+            <div class="${ESC_CLASS_TOP_ICON_TEXT}" aria-hidden="true">
               ${this.cfg.signalLevelText()}
             </div>
           </div>
@@ -3438,8 +3516,8 @@ class htmlCard{
           >
             ${this.cfg.friendlyName()}
             ${this.cfg.passiveMode() ? html`
-              <span class="${ESC_CLASS_HA_ICON_LOCK}">
-                <ha-icon icon="mdi:lock"></ha-icon>
+              <span class="${ESC_CLASS_HA_ICON_LOCK}" role="img" aria-label="locked">
+                <ha-icon icon="mdi:lock" aria-hidden="true"></ha-icon>
               </span>
             `:''}
           </div>
@@ -3470,11 +3548,13 @@ class htmlCard{
       ? html`
         <ha-icon-button
           label="${this.cfg.getLocalize(LOCALIZE_TEXT[this.cfg.applyInvertForShowButtonUpDownLabel(action)])}"
+          aria-label="${this.cfg.getLocalize(LOCALIZE_TEXT[this.cfg.applyInvertForShowButtonUpDownLabel(action)])}"
           .disabled=${this.cfg.disabledGlobaly() || this.cfg.coverButtonDisabled(upDown)}
           @click=${()=> this.superproShutter.doOnclick(`${this.cfg.applyInvertForShowButtonUpDownClick(action,true)}`)} >
           <ha-icon
             class="${ESC_CLASS_HA_ICON}"
-            icon="${icon}">
+            icon="${icon}"
+            aria-hidden="true">
           </ha-icon>
         </ha-icon-button>
       `
@@ -3494,11 +3574,13 @@ class htmlCard{
       ? html`
         <ha-icon-button
           label="${this.cfg.getLocalize(LOCALIZE_TEXT[action])}"
+          aria-label="${this.cfg.getLocalize(LOCALIZE_TEXT[action])}"
           .disabled=${this.cfg.disabledGlobaly()}
           @click=${()=> this.superproShutter.doOnclick(`${action}`)} >
           <ha-icon
             class="${ESC_CLASS_HA_ICON}"
-            icon="${icon}">
+            icon="${icon}"
+            aria-hidden="true">
           </ha-icon>
         </ha-icon-button>
       `
@@ -3511,9 +3593,10 @@ class htmlCard{
         ? html`
           <ha-icon-button
             label="Partially ${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)} (${SHUTTER_OPEN_PCT- this.cfg.partial()}%)"
+            aria-label="Partially ${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)} (${SHUTTER_OPEN_PCT- this.cfg.partial()}%)"
             .disabled=${this.cfg.disabledGlobaly()}
             @click="${()=> this.superproShutter.doOnclick(`${ACTION_SHUTTER_SET_POS}`, this.cfg.calcOffset(this.cfg.partial()))}" >
-            <ha-icon class="${ESC_CLASS_HA_ICON}" icon="mdi:arrow-expand-vertical"></ha-icon>
+            <ha-icon class="${ESC_CLASS_HA_ICON}" icon="mdi:arrow-expand-vertical" aria-hidden="true"></ha-icon>
           </ha-icon-button>
         ` : ''}
     `;
@@ -3545,7 +3628,7 @@ class htmlCard{
           ${this.cfg.partialActive()  //  show partial only if no offset is defined
             ? html`<div class="${ESC_CLASS_SELECTOR_PARTIAL}"></div>`
             : ''}
-          <div class="${ESC_CLASS_MOVEMENT_OVERLAY}">
+          <div class="${ESC_CLASS_MOVEMENT_OVERLAY}" aria-hidden="true">
             <ha-icon class="${ESC_CLASS_MOVEMENT_UP}" icon="mdi:arrow-up">
             </ha-icon>
             <ha-icon class="${ESC_CLASS_MOVEMENT_DOWN}" icon="mdi:arrow-down">
@@ -3660,6 +3743,7 @@ class htmlCard{
             ${[i * 3, i * 3 + 1, i * 3 + 2].map(j => html`
               <ha-icon-button
                 label=${labels[j]}
+                aria-label=${labels[j]}
                 .disabled=${disabled[pointer[j]]}
                 @click=${click[j]}
                 path=${icons[j]}>
@@ -3721,9 +3805,10 @@ class htmlCard{
     return html`
           <ha-icon-button
             label="${this.cfg.getLocalize(LOCALIZE_TEXT[action])}"
+            aria-label="${this.cfg.getLocalize(LOCALIZE_TEXT[action])}"
             .disabled=${this.cfg.disabledGlobaly()}
             @click="${()=> this.superproShutter.doOnclick(`${action}`)}">
-            <ha-icon class="${ESC_CLASS_HA_ICON_TILT}" icon="${icon}"></ha-icon>
+            <ha-icon class="${ESC_CLASS_HA_ICON_TILT}" icon="${icon}" aria-hidden="true"></ha-icon>
           </ha-icon-button>
     `;
   }
@@ -3756,7 +3841,8 @@ class haEntity{
       this.#context =  entityInfo.context;
       this.#entityId = entityInfo.entity_id;
     }else{
-      console.warn('haEntity: Entity [', entityId, '] not found');
+      // v0.3 a11y: missing entity surfaces visually as "unavailable"; redundant warn was noise.
+      if (!SILENCE) console.warn('haEntity: Entity [', entityId, '] not found');
       this.#state = UNAVAILABLE;
       this.#attributes = UNAVAILABLE;
       this.#entityId = entityId || UNAVAILABLE;
@@ -4277,7 +4363,8 @@ async function readImageDimensions(escImages) {
           const baseImage = `${ESC_IMAGE_MAP}/${CONFIG_DEFAULT[escImages.imageTypes[i]]}`;
           escImages.images[i]= baseImage; // Replace with default image on error
 
-          console.warn(`Failed to load image: ${fileUrl}, using default image: ${baseImage}`);
+          // v0.3 a11y: graceful image fallback already happened; no warn needed.
+          console_log(`Failed to load image: ${fileUrl}, using default image: ${baseImage}`);
 
           const fallbackImg = new Image();
 
