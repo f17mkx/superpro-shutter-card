@@ -2,6 +2,8 @@
 
 > Branded Home Assistant Lovelace card for animated shutter/cover control. First-class dark-mode theming, accessibility, and internationalisation.
 
+![Superpro Shutter Card](example.png)
+
 **Status**: v0.1 - rebranded fork of `enhanced-shutter-card` v1.5.2, no behavior change
 **Upstream base**: [marcelhoogantink/enhanced-shutter-card](https://github.com/marcelhoogantink/enhanced-shutter-card) @ v1.5.2
 **Author**: Stefan Volk ([@f17mkx](https://github.com/f17mkx))
