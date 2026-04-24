@@ -1,9 +1,8 @@
-
 {
-  "domain": "enhanced-shutter-card",
-  "name": "Enhanced Shutter Card",
-  "codeowners": ["@marcelhoogantink"],
-  "documentation": "https://github.com/marcelhoogantik/enhnced-shutter-card/readme.md",
-  "issue_tracker": "https://github.com/vingerha/marcelhoogantik/enhnced-shutter-card/issues",
-  "version": "0.5"
+  "domain": "superpro-shutter-card",
+  "name": "Superpro Shutter Card",
+  "codeowners": ["@f17mkx"],
+  "documentation": "https://github.com/f17mkx/superpro-shutter-card/blob/main/README.md",
+  "issue_tracker": "https://github.com/f17mkx/superpro-shutter-card/issues",
+  "version": "0.1.0"
 }

@@ -1,5 +1,5 @@
 
-const VERSION = 'v1.5.2';
+const VERSION = 'v0.1.0';
 const DEBUG = false;
 // // local copy of RELEASE 3.0.1 of
 // https://www.jsdelivr.com/package/gh/lit/dist
@@ -10,8 +10,8 @@ import {LitElement, html, css, unsafeCSS } from './lit/lit-core.min.js';
 // import {LitElement} from './lit/lit-debug.js'; // <-- dit is nu de debug versie
 
 
-const HA_CARD_NAME = "enhanced-shutter-card";
-const HA_SHUTTER_NAME = `enhanced-shutter`;
+const HA_CARD_NAME = "superpro-shutter-card";
+const HA_SHUTTER_NAME = `superpro-shutter`;
 const HA_HUI_VIEW = 'hui-view';
 const SPACE = ' ';
 
@@ -847,7 +847,7 @@ const SHUTTER_CSS =`
  * updateComplete
  */
 
-class EnhancedShutterCardNew extends LitElement{
+class SuperproShutterCardNew extends LitElement{
   //reactive properties
   static properties = {
     // reactive variables from Home Assistant Card
@@ -1051,7 +1051,7 @@ class EnhancedShutterCardNew extends LitElement{
                 this.localCfgs[entityId].setSignalEntity(this.hass,currEntity.signal_entity);
 
                 return html`
-                  <enhanced-shutter
+                  <superpro-shutter
                     .react_ShutterState=${this.localCfgs[entityId].shutterState}
                     .react_BatteryState=${this.localCfgs[entityId].batteryState}
                     .react_SignalState=${this.localCfgs[entityId].signalState}
@@ -1062,7 +1062,7 @@ class EnhancedShutterCardNew extends LitElement{
                     .cfg=${this.localCfgs[entityId]}
                     .escImages=${this.escImages}
                   >
-                  </enhanced-shutter>
+                  </superpro-shutter>
                   ${showMessages ? html`${this.messageManager.displayGroupMessages(entityId)} ` : ''}
                   <div class="${ESC_CLASS_SHUTTER_SEPERATE}"></div>
                 `;$
@@ -1517,7 +1517,7 @@ class EnhancedShutterCardNew extends LitElement{
     return {
       "entities": [{
         "entity": entityId,
-        "name": "My First Enhanced Shutter Card",
+        "name": "My First Superpro Shutter Card",
         "top_offset_pct": 13,
         "button_up_hide_states": [
           SHUTTER_STATE_OPEN,
@@ -1540,9 +1540,9 @@ class EnhancedShutterCardNew extends LitElement{
 }
 
 
-class EnhancedShutter extends LitElement
+class SuperproShutter extends LitElement
 {
-  // loaded from EnhancedShutterCardNew():
+  // loaded from SuperproShutterCardNew():
   // - react_ShutterState
   // - react_BatteryState
   // - react_SignalState
@@ -3267,14 +3267,14 @@ class shutterCfg {
 
 class htmlCard{
 
-  constructor(enhancedShutter,positionText){
-    this.enhancedShutter=enhancedShutter;
-    this.cfg =enhancedShutter.cfg;
+  constructor(superproShutter,positionText){
+    this.superproShutter=superproShutter;
+    this.cfg =superproShutter.cfg;
     this.positionText =positionText;
-    this.actualScreenPosition = enhancedShutter.actualScreenPosition;
-    this.actualTiltPosition = enhancedShutter.actualTiltPosition;
-    this.escImages= enhancedShutter.escImages;
-    this.cfg = enhancedShutter.cfg;
+    this.actualScreenPosition = superproShutter.actualScreenPosition;
+    this.actualTiltPosition = superproShutter.actualTiltPosition;
+    this.escImages= superproShutter.escImages;
+    this.cfg = superproShutter.cfg;
   }
 
   defStyleVars(){
@@ -3290,7 +3290,7 @@ class htmlCard{
       --mdc-icon-size: ${this.cfg.iconSize()}${UNITY};
       --icon-size-wifi-battery: ${this.cfg.iconSizeWifiBattery()}${UNITY};
 
-      --esc-overflow: ${this.enhancedShutter.getOverflow()};
+      --esc-overflow: ${this.superproShutter.getOverflow()};
 
       --esc-display-name-top: ${this.cfg.displayName(TOP)};
       --esc-display-name-bottom: ${this.cfg.displayName(BOTTOM)};
@@ -3305,31 +3305,31 @@ class htmlCard{
       --esc-window-rotate: ${this.cfg.viewImageRotate()};
       --esc-button-rotate: ${this.cfg.buttonRotate()};
 
-      --esc-transform-slide:  ${this.enhancedShutter.transformSlide(this.actualScreenPosition)};
-      --esc-transform-picker: ${this.enhancedShutter.transformPicker(this.actualScreenPosition)};
-      --esc-tilt-angle-deg: ${this.enhancedShutter.getTiltAngleDeg(this.enhancedShutter.react_TiltPosition)};
-      --esc-tilt-angle-deg-graph: ${this.enhancedShutter.getTiltAngleDegGraph(this.enhancedShutter.react_TiltPosition)};
+      --esc-transform-slide:  ${this.superproShutter.transformSlide(this.actualScreenPosition)};
+      --esc-transform-picker: ${this.superproShutter.transformPicker(this.actualScreenPosition)};
+      --esc-tilt-angle-deg: ${this.superproShutter.getTiltAngleDeg(this.superproShutter.react_TiltPosition)};
+      --esc-tilt-angle-deg-graph: ${this.superproShutter.getTiltAngleDegGraph(this.superproShutter.react_TiltPosition)};
 
-      --esc-transform-undo-slats-rotate:  ${this.enhancedShutter.transformUndoSlatsRotate()};
-      --esc-transform-tilt-slat-rotate:  ${this.enhancedShutter.transformTiltSlatRotate()};
-      --esc-transform-movement: ${this.enhancedShutter.transformMovement()};
+      --esc-transform-undo-slats-rotate:  ${this.superproShutter.transformUndoSlatsRotate()};
+      --esc-transform-tilt-slat-rotate:  ${this.superproShutter.transformTiltSlatRotate()};
+      --esc-transform-movement: ${this.superproShutter.transformMovement()};
 
       --esc-picker-top: -${this.cfg.pickerOverlapPx()+UNITY};
       --esc-picker-height: ${this.cfg.pickerOverlapPx()*2+UNITY};
 
-      --esc-slat-height: ${this.enhancedShutter.slatHeightPx()+UNITY};
+      --esc-slat-height: ${this.superproShutter.slatHeightPx()+UNITY};
 
-      --esc-tilt-slat-height: ${this.enhancedShutter.tiltSlatHeightPx()+UNITY};
-      --esc-tilt-slat-width: ${this.enhancedShutter.tiltSlatWidthPx()};
-      --esc-tilt-slat-origin: ${this.enhancedShutter.tiltSlatOrigin()};
-      --esc-tilt-slat-background-size: ${this.enhancedShutter.tiltSlatBackgroundSize()};
-      --esc-tilt-slider-rotate: ${this.enhancedShutter.tiltSliderRotate()};
-      --esc-tilt-icon-rotate: ${(this.enhancedShutter.tiltIconRotate3())};
+      --esc-tilt-slat-height: ${this.superproShutter.tiltSlatHeightPx()+UNITY};
+      --esc-tilt-slat-width: ${this.superproShutter.tiltSlatWidthPx()};
+      --esc-tilt-slat-origin: ${this.superproShutter.tiltSlatOrigin()};
+      --esc-tilt-slat-background-size: ${this.superproShutter.tiltSlatBackgroundSize()};
+      --esc-tilt-slider-rotate: ${this.superproShutter.tiltSliderRotate()};
+      --esc-tilt-icon-rotate: ${(this.superproShutter.tiltIconRotate3())};
 
-      --esc-slide-slats-height: ${this.enhancedShutter.slatsSlideHeightPx()+UNITY};
-      --esc-slide-edge-height: ${this.enhancedShutter.shutterBottomSize().y+UNITY};
+      --esc-slide-slats-height: ${this.superproShutter.slatsSlideHeightPx()+UNITY};
+      --esc-slide-edge-height: ${this.superproShutter.shutterBottomSize().y+UNITY};
 
-      --esc-transform-partial: ${this.enhancedShutter.transformPartial()};
+      --esc-transform-partial: ${this.superproShutter.transformPartial()};
 
       --esc-buttons-flex-flow: ${!this.cfg.buttonsInRow() ? 'row' : 'column'} nowrap;
       --esc-buttons-flex-flow2: ${!this.cfg.buttonsInRow() ? 'row-reverse' : 'column'} nowrap;
@@ -3344,12 +3344,12 @@ class htmlCard{
       --esc-slide-background-main-color: ${shutterSlatImage.includes('.') ? '' : `${shutterSlatImage}`};
       --esc-slide-background-edge-color: ${shutterBottomImage.includes('.') ? '' : `${shutterBottomImage}`};
 
-      --esc-slide-background-slat-size: ${this.enhancedShutter.shutterSlatSizePercentage()};
-      --esc-slide-background-slats-size: ${this.enhancedShutter.shutterSlatsSizePercentage()};
-      --esc-slide-background-edge-size: ${this.enhancedShutter.shutterBottomSizePercentage()};
+      --esc-slide-background-slat-size: ${this.superproShutter.shutterSlatSizePercentage()};
+      --esc-slide-background-slats-size: ${this.superproShutter.shutterSlatsSizePercentage()};
+      --esc-slide-background-edge-size: ${this.superproShutter.shutterBottomSizePercentage()};
 
-      --esc-slide-background-main-position: ${this.enhancedShutter.shutterMainBackgroundPosition()};
-      --esc-slide-background-edge-position: ${this.enhancedShutter.shutterEdgeBackgroundPosition()};
+      --esc-slide-background-main-position: ${this.superproShutter.shutterMainBackgroundPosition()};
+      --esc-slide-background-edge-position: ${this.superproShutter.shutterEdgeBackgroundPosition()};
 
       --esc-top-right-color: ${this.cfg.signalIconColor()};
       --esc-top-left-color: ${this.cfg.batteryIconColor()};
@@ -3359,7 +3359,7 @@ class htmlCard{
       --esc-text-scale: ${this.cfg.textScaleFactor()};
       --esc-button-scale: ${this.cfg.buttonScaleFactor()};
 
-      --esc-selector-flex-basis: ${this.cfg.buttonsInRow() ? this.enhancedShutter.actualGlobalWidthPx():this.enhancedShutter.actualGlobalHeightPx()}${UNITY};
+      --esc-selector-flex-basis: ${this.cfg.buttonsInRow() ? this.superproShutter.actualGlobalWidthPx():this.superproShutter.actualGlobalHeightPx()}${UNITY};
 `;
   }
 
@@ -3406,7 +3406,7 @@ class htmlCard{
     return html`
         <div class="${escClassName}">
           <div class="${ESC_CLASS_LABEL} ${this.cfg.disabledGlobaly() ? `${ESC_CLASS_LABEL_DISABLED}` : ''}"
-            @click="${() => this.enhancedShutter.doHassMoreInfoOpen(this.cfg.entityId())}"
+            @click="${() => this.superproShutter.doHassMoreInfoOpen(this.cfg.entityId())}"
           >
             ${this.cfg.friendlyName()}
             ${this.cfg.passiveMode() ? html`
@@ -3443,7 +3443,7 @@ class htmlCard{
         <ha-icon-button
           label="${this.cfg.getLocalize(LOCALIZE_TEXT[this.cfg.applyInvertForShowButtonUpDownLabel(action)])}"
           .disabled=${this.cfg.disabledGlobaly() || this.cfg.coverButtonDisabled(upDown)}
-          @click=${()=> this.enhancedShutter.doOnclick(`${this.cfg.applyInvertForShowButtonUpDownClick(action,true)}`)} >
+          @click=${()=> this.superproShutter.doOnclick(`${this.cfg.applyInvertForShowButtonUpDownClick(action,true)}`)} >
           <ha-icon
             class="${ESC_CLASS_HA_ICON}"
             icon="${icon}">
@@ -3467,7 +3467,7 @@ class htmlCard{
         <ha-icon-button
           label="${this.cfg.getLocalize(LOCALIZE_TEXT[action])}"
           .disabled=${this.cfg.disabledGlobaly()}
-          @click=${()=> this.enhancedShutter.doOnclick(`${action}`)} >
+          @click=${()=> this.superproShutter.doOnclick(`${action}`)} >
           <ha-icon
             class="${ESC_CLASS_HA_ICON}"
             icon="${icon}">
@@ -3484,7 +3484,7 @@ class htmlCard{
           <ha-icon-button
             label="Partially ${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)} (${SHUTTER_OPEN_PCT- this.cfg.partial()}%)"
             .disabled=${this.cfg.disabledGlobaly()}
-            @click="${()=> this.enhancedShutter.doOnclick(`${ACTION_SHUTTER_SET_POS}`, this.cfg.calcOffset(this.cfg.partial()))}" >
+            @click="${()=> this.superproShutter.doOnclick(`${ACTION_SHUTTER_SET_POS}`, this.cfg.calcOffset(this.cfg.partial()))}" >
             <ha-icon class="${ESC_CLASS_HA_ICON}" icon="mdi:arrow-expand-vertical"></ha-icon>
           </ha-icon-button>
         ` : ''}
@@ -3541,7 +3541,7 @@ class htmlCard{
   }
   showSlideSlats(){
     // Only Tilt when SHowTilt and there is a size
-    const output = this.cfg.showTilt() && this.enhancedShutter.canShowTilt()
+    const output = this.cfg.showTilt() && this.superproShutter.canShowTilt()
      ? html`
         ${this.showSlatsTilt()}
       `
@@ -3552,8 +3552,8 @@ class htmlCard{
   }
   showSlatsTilt(){
 
-    const sizeSlide = this.enhancedShutter.windowSizeMovingDirectionPx();
-    const sizeSlat = this.enhancedShutter.slatSizeMovingDirectionPx() ;
+    const sizeSlide = this.superproShutter.windowSizeMovingDirectionPx();
+    const sizeSlat = this.superproShutter.slatSizeMovingDirectionPx() ;
 
     //const sizeSlat = new xyPair(100,51);
     const number = sizeSlat ? Math.ceil(sizeSlide / sizeSlat): 1;
@@ -3623,7 +3623,7 @@ class htmlCard{
       2: this.cfg.disabledGlobaly() || this.cfg.coverButtonDownDisabled(), // down
     };
     const click = Object.fromEntries(
-      [0, 1, 2, 3, 4, 5].map(j => [j, () => this.enhancedShutter.doOnclick(`${ACTION_SHUTTER_SET_POS}`, this.cfg.calcOffset(pct[j]))])
+      [0, 1, 2, 3, 4, 5].map(j => [j, () => this.superproShutter.doOnclick(`${ACTION_SHUTTER_SET_POS}`, this.cfg.calcOffset(pct[j]))])
     );
 
     return html`
@@ -3694,7 +3694,7 @@ class htmlCard{
           <ha-icon-button
             label="${this.cfg.getLocalize(LOCALIZE_TEXT[action])}"
             .disabled=${this.cfg.disabledGlobaly()}
-            @click="${()=> this.enhancedShutter.doOnclick(`${action}`)}">
+            @click="${()=> this.superproShutter.doOnclick(`${action}`)}">
             <ha-icon class="${ESC_CLASS_HA_ICON_TILT}" icon="${icon}"></ha-icon>
           </ha-icon-button>
     `;
@@ -3776,9 +3776,9 @@ class MessageManager {
     }
     this.messageGroup[subject].messages.push(message);
     if (type == 'warning' || type == 'error'){
-      console.warn(`Enhanced Shutter Card (${subject}): "${message.text}"`);
+      console.warn(`Superpro Shutter Card (${subject}): "${message.text}"`);
 //    }else{
-//      console.info(`Enhanced Shutter Card (${subject}): "${message.text}"`);
+//      console.info(`Superpro Shutter Card (${subject}): "${message.text}"`);
     }
   }
 
@@ -3996,20 +3996,20 @@ const Globals={
   screenOrientation: {value:LANDSCAPE},
 }
 
-customElements.define(HA_CARD_NAME, EnhancedShutterCardNew);
-customElements.define(HA_SHUTTER_NAME, EnhancedShutter);
+customElements.define(HA_CARD_NAME, SuperproShutterCardNew);
+customElements.define(HA_SHUTTER_NAME, SuperproShutter);
 
 window.customCards = window.customCards || [];
 window.customCards.push({
-  type: "enhanced-shutter-card",
-  name: "Enhanced Shutter Card",
+  type: "superpro-shutter-card",
+  name: "Superpro Shutter Card",
   preview: true,
-  description: "An enhanced shutter card for easy control of shutters",
-  documentationURL: "https://github.com/marcelhoogantink/enhanced-shutter-card"
+  description: "A rebranded shutter card for easy control of shutters (fork of enhanced-shutter-card)",
+  documentationURL: "https://github.com/f17mkx/superpro-shutter-card"
 });
 
 console.info(
-  `%c ENHANCED-SHUTTER-CARD %c Version ${VERSION}`,
+  `%c SUPERPRO-SHUTTER-CARD %c Version ${VERSION}`,
   'color: white; background: green; font-weight: 700',
   'color: black;background: white; font-weight: bold'
 );
