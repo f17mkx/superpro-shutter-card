@@ -1,5 +1,5 @@
 
-const VERSION = 'v0.1.0';
+const VERSION = 'v0.2.0';
 const DEBUG = false;
 // // local copy of RELEASE 3.0.1 of
 // https://www.jsdelivr.com/package/gh/lit/dist
@@ -678,7 +678,10 @@ const SHUTTER_CSS =`
         height: 100%;
         width: 100%;
         position: absolute;
-        background-color: rgba(0,0,0,0.3);
+        /* v0.2 themable: fall back to legacy rgba overlay if integrator doesn't override.
+           Reason for keeping a dark-tinted default: overlay must darken the card whether the
+           HA theme is light or dark, so semi-transparent black still reads as "in motion". */
+        background-color: var(--esc-movement-overlay-bg, rgba(0,0,0,0.3));
         text-align: center;
         --mdc-icon-size: 60px;
         transform-origin: center center;
@@ -805,14 +808,17 @@ const SHUTTER_CSS =`
     .tilt-slat-container {
       position: relative;
       box-sizing: border-box;
-      border: 1px solid grey;
+      /* v0.2 themable: divider-color + secondary-background-color are HA theme tokens
+         that already flip with light/dark. Hardcoded grey + #f9f9f9 made the tilt
+         widget glow white on a dark HA theme - this is the primary bug v0.2 fixes. */
+      border: 1px solid var(--esc-tilt-container-border, var(--divider-color, grey));
       border-radius: 5px;
       display: flex;
       flex: none;
       flex-flow: var(--esc-buttons-flex-flow2);
       align-items: center;
       justify-content: center;
-      background: #f9f9f9;
+      background: var(--esc-tilt-container-bg, var(--secondary-background-color, #f9f9f9));
     }
 
     .tilt-slat-class {
@@ -825,11 +831,33 @@ const SHUTTER_CSS =`
     .tilt-line {
       width: calc(var(--esc-button-scale)*2px);
       height: calc(var(--esc-button-scale)*${ICON_BUTTON_SIZE-ICON_SIZE/2}px);
-      background: red;
+      /* v0.2 themable: fall back to HA's error-color so the indicator inherits the
+         theme's accent; hard red was unreadable against HA red accent themes. */
+      background: var(--esc-tilt-line-color, var(--error-color, red));
       position: absolute;
       top: calc(var(--esc-button-scale)*${ -(ICON_BUTTON_SIZE-ICON_SIZE)/2 +ICON_SIZE/4}px);
       left: calc(var(--esc-button-scale)*${ICON_SIZE/2}px);
       transform: translateX(-50%);
+    }
+
+    /* v0.2 signature: dark-mode filter for legacy PNG slat/edge/window assets.
+       The upstream PNGs were baked at ~#F5F5F5 for light themes. Under HA's dark
+       theme they glow like lightboxes against dark cards. Applying a modest
+       brightness/contrast knock-down via filter preserves the slat rotation
+       illusion while letting the card blend into dark dashboards.
+       Opt-out via --esc-dark-asset-filter: none; on :host.
+       Opt-in regardless of OS pref via data-force-dark="1" on :host. */
+    @media (prefers-color-scheme: dark) {
+      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_SLIDE_SLATS},
+      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_SLIDE_EDGE},
+      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_PICTURE} {
+        filter: var(--esc-dark-asset-filter, brightness(0.82) contrast(1.08) saturate(0.92));
+      }
+    }
+    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_SLIDE_SLATS},
+    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_SLIDE_EDGE},
+    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_PICTURE} {
+      filter: var(--esc-dark-asset-filter, brightness(0.82) contrast(1.08) saturate(0.92));
     }
 `;
 
