@@ -107,18 +107,20 @@ test('dark-mode filter applies on prefers-color-scheme: dark (v0.2 regression)',
   await page.waitForFunction(() => window.__cardReady === true, { timeout: 10_000 });
 
   // The v0.2 dark-mode rule applies a brightness/contrast/saturate filter
-  // to slat/edge/picture elements via @media (prefers-color-scheme: dark).
-  // We read the computed `filter` on one of those elements; under dark
-  // colorScheme it should be the filter expression, not 'none'. If the
-  // @media block ever gets dropped or the class names rename, this
-  // assertion catches it.
+  // via @media (prefers-color-scheme: dark). v1.0.6 moved the filter from the
+  // three child classes (.esc-shutter-selector-slide-slats / -edge / -picture)
+  // up to the parent `.esc-shutter-selector` so the cascade also reaches the
+  // window frame (rendered as background-image on .esc-shutter-selector). We
+  // primarily check the parent now; the child-class fallback is kept so the
+  // test still passes against pre-v1.0.6 builds.
   const filterValue = await page.evaluate(() => {
     const card = window.__card;
     const shutter = card.shadowRoot.querySelector('superpro-shutter');
-    const slat = shutter.shadowRoot.querySelector('.esc-shutter-selector-slide-slats')
+    const target = shutter.shadowRoot.querySelector('.esc-shutter-selector')
+      || shutter.shadowRoot.querySelector('.esc-shutter-selector-slide-slats')
       || shutter.shadowRoot.querySelector('.esc-shutter-selector-picture')
       || shutter.shadowRoot.querySelector('.esc-shutter-selector-slide-edge');
-    return slat ? getComputedStyle(slat).filter : 'NO_TARGET';
+    return target ? getComputedStyle(target).filter : 'NO_TARGET';
   });
 
   expect(filterValue, 'expected dark-mode CSS filter target to exist').not.toBe('NO_TARGET');
