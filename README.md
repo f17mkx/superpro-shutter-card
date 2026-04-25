@@ -26,6 +26,22 @@ url: /hacsfiles/superpro-shutter-card/superpro-shutter-card.js
 type: module
 ```
 
+### Images (HACS limitation)
+
+HACS for Lovelace plugins downloads only the JS file, not the `images/` subfolder. If shutter cards render with broken/missing graphics, you have two options:
+
+1. **Manual extract** - download `superpro-shutter-card.zip` from the latest release and extract into `<config>/www/community/superpro-shutter-card/`. The `images/` folder lands next to the JS.
+2. **Reuse `enhanced-shutter-card` images** if you have it installed - per-card config:
+
+```yaml
+type: custom:superpro-shutter-card
+image_map: /local/community/enhanced-shutter-card/images
+entities:
+  - entity: cover.your_shutter
+```
+
+Future versions will inline the assets so this step goes away.
+
 ### Use it in your Lovelace YAML
 
 ```yaml

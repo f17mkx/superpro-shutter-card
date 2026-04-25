@@ -32,7 +32,7 @@ var SuperproShutterCard = (function (exports) {
   // shipped lit-core.min.js as a sibling file under dist/lit/ - that
   // directory is gone post-v0.5 because the bundle is self-contained.
 
-  const VERSION = 'v1.0.2';
+  const VERSION = 'v1.0.3';
 
 
   const HA_CARD_NAME = "superpro-shutter-card";
