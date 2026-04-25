@@ -8,6 +8,49 @@ Kategorien: **Req** (Requirement), **Frage**, **Decision**.
 
 ---
 
+## 2026-04-25 14:00 - user-prompt
+
+6 Eintraege (5 Req, 1 Frage, 0 Decisions).
+
+### Req [release] Tag v1.0.0 pushen + GitHub-Release anlegen (Pending)
+
+> „please create the release now so i can take the screenshots"
+> „tag v1.0.0 exists locally but has not been pushed to f17mkx/superpro-shutter-card, please push it before continuing"
+
+**Was zu tun ist:** `git push origin v1.0.0`, dann `gh release create v1.0.0` mit Release-Notes aus CHANGELOG.
+
+### Req [ci] Workflow gruen validieren (Pending)
+
+> „Validate workflow is green"
+
+**Was zu tun ist:** `gh run list --limit 5` nach Tag-Push pollen, sicherstellen dass GH-Actions auf v1.0.0 alle Jobs bestehen.
+
+### Req [yama-ha] Card auf Yamas HA testen (Pending)
+
+> „can we test it on yamas-ha so i can make the screenshots fuer den release?"
+
+**Was zu tun ist:** Card als Lovelace-Resource in Yamas HA-Instanz (192.168.178.200) hinzufuegen, vor Release-Screenshots.
+
+### Req [yama-ha] Beispiel-Karten auf rollos-Dashboard hinzufuegen (Pending)
+
+> „du kannst welche auf http://192.168.178.200:8123/dashboard-yama/rollos hinzufuegen"
+
+**Was zu tun ist:** Mehrere Card-Konfigurationen (verschiedene States/Themes) auf dem `dashboard-yama/rollos` Lovelace-Dashboard anfuegen, damit Stefan reichhaltige Screenshots machen kann.
+
+### Req [yama-ha] Yama-HA-Integration wie besprochen (Pending)
+
+> „add it to yamas ha as discussed"
+
+**Was zu tun ist:** Vorab-besprochenen Yama-Integration-Plan ausfuehren (Card als HACS-Repo bei Yama hinzufuegen oder direkt als JS-Resource).
+
+### Frage [yama-ha] Permission/Confirmation Test auf Yamas HA
+
+> „can we test it on yamas-ha so i can make the screenshots fuer den release?"
+
+**Antwort-Hinweis:** Rhetorisch + Permission-bestaetigend - Stefan triggert mit dem Prompt selbst die Aktion.
+
+---
+
 ## 2026-04-24 - user-prompt
 
 4 Eintraege (3 Req, 0 Fragen, 1 Decision).

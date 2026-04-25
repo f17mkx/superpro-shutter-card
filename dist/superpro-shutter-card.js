@@ -32,7 +32,7 @@ var SuperproShutterCard = (function (exports) {
   // shipped lit-core.min.js as a sibling file under dist/lit/ - that
   // directory is gone post-v0.5 because the bundle is self-contained.
 
-  const VERSION = 'v1.0.0';
+  const VERSION = 'v1.0.1';
 
 
   const HA_CARD_NAME = "superpro-shutter-card";
@@ -1121,6 +1121,14 @@ var SuperproShutterCard = (function (exports) {
             /* On hass update, check if there is a cover change */
               const liveStates = this[propName].states;
 
+              // v1.0.1 dark theme: HA themes set hass.themes.darkMode independently
+              // of OS prefers-color-scheme. Without this, the v0.2 slat-PNG dark
+              // filter never engages on HA dark themes when the OS is in light
+              // mode (common: HA dark theme via schedule, macOS light during day).
+              // Reflect the HA-theme dark state to data-force-dark="1" which the
+              // existing v0.2 :host([data-force-dark="1"]) CSS rule already styles.
+              this.#applyHaDarkTheme();
+
               Object.keys(this.localCfgs).forEach(entityId =>{
                 const liveEntityFromHass = liveStates[entityId];
                 if (liveEntityFromHass) {
@@ -1266,6 +1274,20 @@ var SuperproShutterCard = (function (exports) {
 
         return el;
     }
+    // v1.0.1: reflect HA-theme darkMode to a host attribute that the v0.2
+    // :host([data-force-dark="1"]) CSS rule already targets. Idempotent: setting
+    // the same attribute value is a no-op in the DOM, so calling this on every
+    // hass update is cheap.
+    #applyHaDarkTheme(){
+      const isDark = this.hass?.themes?.darkMode === true;
+      if (isDark){
+        if (this.getAttribute('data-force-dark') !== '1'){
+          this.setAttribute('data-force-dark', '1');
+        }
+      } else if (this.hasAttribute('data-force-dark')){
+        this.removeAttribute('data-force-dark');
+      }
+    }
     connectedCallback() {
       super.connectedCallback();
 
@@ -1285,6 +1307,11 @@ var SuperproShutterCard = (function (exports) {
 
       /* get element of hui-view to detect resizing */
       Globals.huiView = findElementInBody(HA_HUI_VIEW);
+
+      // v1.0.1: catch the case where hass arrives before connectedCallback runs
+      // (e.g. element re-attached after view switch). shouldUpdate also calls
+      // this; both paths converge on the same attribute, no race.
+      this.#applyHaDarkTheme();
 
       this.messageManager.addMessage(`GridSize: rows: ${this.nbRows}, columns: ${this.nbCols}`,HA_ALERT_SUCCESS,'GridSize');
       this.startResizeObserver();
