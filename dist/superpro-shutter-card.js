@@ -32,7 +32,7 @@ var SuperproShutterCard = (function (exports) {
   // shipped lit-core.min.js as a sibling file under dist/lit/ - that
   // directory is gone post-v0.5 because the bundle is self-contained.
 
-  const VERSION = 'v1.0.4';
+  const VERSION = 'v1.0.5';
 
 
   const HA_CARD_NAME = "superpro-shutter-card";
@@ -931,24 +931,27 @@ var SuperproShutterCard = (function (exports) {
       transform: translateX(-50%);
     }
 
-    /* v0.2 signature: dark-mode filter for legacy PNG slat/edge/window assets.
+    /* v0.2 dark-mode filter for legacy PNG slat/edge/window assets.
        The upstream PNGs were baked at ~#F5F5F5 for light themes. Under HA's dark
-       theme they glow like lightboxes against dark cards. Applying a modest
-       brightness/contrast knock-down via filter preserves the slat rotation
-       illusion while letting the card blend into dark dashboards.
+       theme they glow like lightboxes against dark cards. Filter knocks them
+       down so the card blends into dark dashboards.
+       v1.0.5: defaults made noticeably more aggressive (brightness 0.82 → 0.45,
+       contrast 1.08 → 1.25, saturate 0.92 → 0.85). The previous values left
+       slats visibly grey-ish on dark themes; new values push white slats to
+       roughly RGB(115,115,115) which reads as deep mid-grey, blending properly.
        Opt-out via --esc-dark-asset-filter: none; on :host.
        Opt-in regardless of OS pref via data-force-dark="1" on :host. */
     @media (prefers-color-scheme: dark) {
       :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_SLIDE_SLATS},
       :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_SLIDE_EDGE},
       :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_PICTURE} {
-        filter: var(--esc-dark-asset-filter, brightness(0.82) contrast(1.08) saturate(0.92));
+        filter: var(--esc-dark-asset-filter, brightness(0.45) contrast(1.25) saturate(0.85));
       }
     }
     :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_SLIDE_SLATS},
     :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_SLIDE_EDGE},
     :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_PICTURE} {
-      filter: var(--esc-dark-asset-filter, brightness(0.82) contrast(1.08) saturate(0.92));
+      filter: var(--esc-dark-asset-filter, brightness(0.45) contrast(1.25) saturate(0.85));
     }
 `  ;
 
