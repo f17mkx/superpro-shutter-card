@@ -107,17 +107,14 @@ test('dark-mode filter applies on prefers-color-scheme: dark (v0.2 regression)',
   await page.waitForFunction(() => window.__cardReady === true, { timeout: 10_000 });
 
   // The v0.2 dark-mode rule applies a brightness/contrast/saturate filter
-  // via @media (prefers-color-scheme: dark). v1.0.6 moved the filter from the
-  // three child classes (.esc-shutter-selector-slide-slats / -edge / -picture)
-  // up to the parent `.esc-shutter-selector` so the cascade also reaches the
-  // window frame (rendered as background-image on .esc-shutter-selector). We
-  // primarily check the parent now; the child-class fallback is kept so the
-  // test still passes against pre-v1.0.6 builds.
+  // via @media (prefers-color-scheme: dark). v1.0.7 keeps the filter on the
+  // three child classes (slats/edge/picture) - parent .esc-shutter-selector
+  // gets a separate background-blend-mode treatment for the frame, not a
+  // CSS `filter`. So we read the filter on the children, not the parent.
   const filterValue = await page.evaluate(() => {
     const card = window.__card;
     const shutter = card.shadowRoot.querySelector('superpro-shutter');
-    const target = shutter.shadowRoot.querySelector('.esc-shutter-selector')
-      || shutter.shadowRoot.querySelector('.esc-shutter-selector-slide-slats')
+    const target = shutter.shadowRoot.querySelector('.esc-shutter-selector-slide-slats')
       || shutter.shadowRoot.querySelector('.esc-shutter-selector-picture')
       || shutter.shadowRoot.querySelector('.esc-shutter-selector-slide-edge');
     return target ? getComputedStyle(target).filter : 'NO_TARGET';

@@ -32,7 +32,7 @@ var SuperproShutterCard = (function (exports) {
   // shipped lit-core.min.js as a sibling file under dist/lit/ - that
   // directory is gone post-v0.5 because the bundle is self-contained.
 
-  const VERSION = 'v1.0.6';
+  const VERSION = 'v1.0.7';
 
 
   const HA_CARD_NAME = "superpro-shutter-card";
@@ -941,19 +941,36 @@ var SuperproShutterCard = (function (exports) {
        roughly RGB(115,115,115) which reads as deep mid-grey, blending properly.
        Opt-out via --esc-dark-asset-filter: none; on :host.
        Opt-in regardless of OS pref via data-force-dark="1" on :host. */
-    /* v1.0.6: filter the outer .esc-selector container instead of three separate
-       inner classes. CSS filter cascades to all children, so this single rule
-       covers slats + edge + picture + the window-frame background-image (which
-       is rendered as background-image on .esc-selector itself - the previous
-       v0.2 selector list missed it, leaving the frame visibly grey). Filtering
-       both parent and children would double-apply the brightness multiplier. */
+    /* v1.0.7: split into two rules. The v1.0.5/v0.2 selector list (slats + edge
+       + picture) actually rendered slats correctly because filter on a leaf
+       composes cleanly with the alpha-channel slat PNGs. Filtering the parent
+       .esc-selector (v1.0.6 attempt) made the same slat PNGs render lighter
+       because the cascade applies to the COMPOSITED bg+children, not each layer.
+       Restored child-filter approach for slats/edge/picture. The window frame
+       is rendered as background-image on .esc-selector itself - it's not under
+       any child class, so we darken it via a separate technique:
+       background-blend-mode multiply with --esc-dark-frame-overlay. The blend
+       only touches the parent's own background painting; children render on
+       top of the blended bg with their own filter intact. */
     @media (prefers-color-scheme: dark) {
-      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR} {
+      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_SLIDE_SLATS},
+      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_SLIDE_EDGE},
+      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_PICTURE} {
         filter: var(--esc-dark-asset-filter, brightness(0.45) contrast(1.25) saturate(0.85));
       }
+      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR} {
+        background-color: var(--esc-dark-frame-overlay, rgb(115, 115, 115));
+        background-blend-mode: multiply;
+      }
+    }
+    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_SLIDE_SLATS},
+    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_SLIDE_EDGE},
+    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_PICTURE} {
+      filter: var(--esc-dark-asset-filter, brightness(0.45) contrast(1.25) saturate(0.85));
     }
     :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR} {
-      filter: var(--esc-dark-asset-filter, brightness(0.45) contrast(1.25) saturate(0.85));
+      background-color: var(--esc-dark-frame-overlay, rgb(115, 115, 115));
+      background-blend-mode: multiply;
     }
 `  ;
 
