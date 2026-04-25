@@ -1,6 +1,6 @@
 {
   "name": "superpro-shutter-card",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "description": "Branded Home Assistant Lovelace card for animated shutter/cover control",
   "type": "module",
   "private": true,
