@@ -32,7 +32,7 @@ var SuperproShutterCard = (function (exports) {
   // shipped lit-core.min.js as a sibling file under dist/lit/ - that
   // directory is gone post-v0.5 because the bundle is self-contained.
 
-  const VERSION = 'v1.0.3';
+  const VERSION = 'v1.0.4';
 
 
   const HA_CARD_NAME = "superpro-shutter-card";
@@ -1121,13 +1121,11 @@ var SuperproShutterCard = (function (exports) {
             /* On hass update, check if there is a cover change */
               const liveStates = this[propName].states;
 
-              // v1.0.1 dark theme: HA themes set hass.themes.darkMode independently
-              // of OS prefers-color-scheme. Without this, the v0.2 slat-PNG dark
-              // filter never engages on HA dark themes when the OS is in light
-              // mode (common: HA dark theme via schedule, macOS light during day).
-              // Reflect the HA-theme dark state to data-force-dark="1" which the
-              // existing v0.2 :host([data-force-dark="1"]) CSS rule already styles.
-              this.#applyHaDarkTheme();
+              // v1.0.4: hass.themes.darkMode is propagated to inner <superpro-shutter>
+              // via the .react_DarkMode reactive property in render(). The inner
+              // element reflects it to data-force-dark="1" on its own host so the
+              // v0.2 :host([data-force-dark="1"]) CSS rule (which lives in the inner
+              // element's shadow DOM, not the outer card's) actually matches.
 
               Object.keys(this.localCfgs).forEach(entityId =>{
                 const liveEntityFromHass = liveStates[entityId];
@@ -1216,6 +1214,7 @@ var SuperproShutterCard = (function (exports) {
                     .react_SignalState=${this.localCfgs[entityId].signalState}
                     .react_ScreenOrientation=${this.screenOrientation}
                     .react_EscImagesLoaded=${this.escImagesLoaded}
+                    .react_DarkMode=${this.hass?.themes?.darkMode === true}
 
                     .hass=${this.hass}
                     .cfg=${this.localCfgs[entityId]}
@@ -1274,20 +1273,6 @@ var SuperproShutterCard = (function (exports) {
 
         return el;
     }
-    // v1.0.1: reflect HA-theme darkMode to a host attribute that the v0.2
-    // :host([data-force-dark="1"]) CSS rule already targets. Idempotent: setting
-    // the same attribute value is a no-op in the DOM, so calling this on every
-    // hass update is cheap.
-    #applyHaDarkTheme(){
-      const isDark = this.hass?.themes?.darkMode === true;
-      if (isDark){
-        if (this.getAttribute('data-force-dark') !== '1'){
-          this.setAttribute('data-force-dark', '1');
-        }
-      } else if (this.hasAttribute('data-force-dark')){
-        this.removeAttribute('data-force-dark');
-      }
-    }
     connectedCallback() {
       super.connectedCallback();
 
@@ -1307,11 +1292,6 @@ var SuperproShutterCard = (function (exports) {
 
       /* get element of hui-view to detect resizing */
       Globals.huiView = findElementInBody(HA_HUI_VIEW);
-
-      // v1.0.1: catch the case where hass arrives before connectedCallback runs
-      // (e.g. element re-attached after view switch). shouldUpdate also calls
-      // this; both paths converge on the same attribute, no race.
-      this.#applyHaDarkTheme();
 
       this.messageManager.addMessage(`GridSize: rows: ${this.nbRows}, columns: ${this.nbCols}`,HA_ALERT_SUCCESS,'GridSize');
       this.startResizeObserver();
@@ -1721,6 +1701,10 @@ var SuperproShutterCard = (function (exports) {
       react_SignalState: {type: String},         // for detecting signal state change
       react_ScreenOrientation: {type: Object},   // for chnage in screen orientation  by resize window or rotate device
       react_EscImagesLoaded: {type: Boolean},
+      // v1.0.4: HA-theme darkMode propagated from parent. Reflects to data-force-dark
+      // attribute via attribute: 'data-force-dark', reflect: true so the v0.2
+      // :host([data-force-dark="1"]) CSS rule (in this element's shadow DOM) matches.
+      react_DarkMode: {type: Boolean, attribute: 'data-force-dark', reflect: true, converter: {toAttribute: v => v ? '1' : null, fromAttribute: v => v === '1'}},
 
       // local reactive variables
       react_ShutterPosition: {state: true},       // for dragging shutter onscreen
