@@ -4,7 +4,7 @@
 // directory is gone post-v0.5 because the bundle is self-contained.
 import { LitElement, html, css, unsafeCSS } from 'lit';
 
-const VERSION = 'v1.0.2';
+const VERSION = 'v1.0.3';
 const DEBUG = false;
 // v0.3 a11y: SILENCE gates noisy paths that previously emitted console.warn for
 // expected-DOM-misses (panel views, dashboard layouts without a div.card ancestor).
