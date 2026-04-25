@@ -4,7 +4,7 @@
 // directory is gone post-v0.5 because the bundle is self-contained.
 import { LitElement, html, css, unsafeCSS } from 'lit';
 
-const VERSION = 'v1.0.5';
+const VERSION = 'v1.0.6';
 const DEBUG = false;
 // v0.3 a11y: SILENCE gates noisy paths that previously emitted console.warn for
 // expected-DOM-misses (panel views, dashboard layouts without a div.card ancestor).
@@ -928,16 +928,18 @@ const SHUTTER_CSS =`
        roughly RGB(115,115,115) which reads as deep mid-grey, blending properly.
        Opt-out via --esc-dark-asset-filter: none; on :host.
        Opt-in regardless of OS pref via data-force-dark="1" on :host. */
+    /* v1.0.6: filter the outer .esc-selector container instead of three separate
+       inner classes. CSS filter cascades to all children, so this single rule
+       covers slats + edge + picture + the window-frame background-image (which
+       is rendered as background-image on .esc-selector itself - the previous
+       v0.2 selector list missed it, leaving the frame visibly grey). Filtering
+       both parent and children would double-apply the brightness multiplier. */
     @media (prefers-color-scheme: dark) {
-      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_SLIDE_SLATS},
-      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_SLIDE_EDGE},
-      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_PICTURE} {
+      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR} {
         filter: var(--esc-dark-asset-filter, brightness(0.45) contrast(1.25) saturate(0.85));
       }
     }
-    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_SLIDE_SLATS},
-    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_SLIDE_EDGE},
-    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_PICTURE} {
+    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR} {
       filter: var(--esc-dark-asset-filter, brightness(0.45) contrast(1.25) saturate(0.85));
     }
 `;
