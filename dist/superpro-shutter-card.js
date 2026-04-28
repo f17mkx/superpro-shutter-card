@@ -32,7 +32,7 @@ var SuperproShutterCard = (function (exports) {
   // shipped lit-core.min.js as a sibling file under dist/lit/ - that
   // directory is gone post-v0.5 because the bundle is self-contained.
 
-  const VERSION = 'v1.0.7';
+  const VERSION = 'v1.0.8';
 
 
   const HA_CARD_NAME = "superpro-shutter-card";
@@ -284,10 +284,19 @@ var SuperproShutterCard = (function (exports) {
   const ESC_NAME = null;
   const ESC_PASSIVE_MODE = false;
   const ESC_IMAGE_MAP = `/local/community/${HA_CARD_NAME}/images`;
-  const ESC_IMAGE_WINDOW = 'esc-window.png';
-  const ESC_IMAGE_VIEW = 'esc-view.png';
-  const ESC_IMAGE_SHUTTER_SLAT   = 'esc-shutter-slat.png';
-  const ESC_IMAGE_SHUTTER_BOTTOM = 'esc-shutter-bottom.png';
+  const ESC_IMAGE_WINDOW = 'sp-window.png';
+  // v1.0.8: pre-baked dark variant of the default frame, used when HA dark mode is
+  // active and the user hasn't overridden window_image. Recipe was: original frame
+  // recolored at lightness -83% / hue 0 / saturation 0, with the original frame
+  // re-overlaid via multiply blend so the wood grain stays readable.
+  const ESC_IMAGE_WINDOW_DARK = 'sp-window-dark.png';
+  // Set of built-in default frame filenames eligible for the dark-mode swap.
+  // Custom user-supplied window_image values are NOT swapped (we have no dark
+  // variant to swap to) and fall back to the existing CSS multiply-blend.
+  const ESC_BUILTIN_WINDOW_IMAGES = new Set(['sp-window.png', 'sp-window2.png', 'sp-window3.png']);
+  const ESC_IMAGE_VIEW = 'sp-view.png';
+  const ESC_IMAGE_SHUTTER_SLAT   = 'sp-shutter-slat.png';
+  const ESC_IMAGE_SHUTTER_BOTTOM = 'sp-shutter-bottom.png';
   const ESC_ROTATE_MAIN_SHUTTER_IMAGE = true; // true: rotate slat image, false: use slat image as is
   const ESC_STRETCH_EDGE_SHUTTER_IMAGE = true; // true: stretch bottom image, false: use bottom image as is
   const ESC_BASE_HEIGHT_PX = 150; // image-height
@@ -442,8 +451,8 @@ var SuperproShutterCard = (function (exports) {
     [ESC_AWNING]: {
       [CONFIG_INVERT_OPEN_CLOSE_UI]: true,
       [CONFIG_INVERT_PCT_UI]: true,
-      [CONFIG_SHUTTER_SLAT_IMAGE]: 'esc-awning.png',
-      [CONFIG_SHUTTER_BOTTOM_IMAGE]: 'esc-awning-bottom.png',
+      [CONFIG_SHUTTER_SLAT_IMAGE]: 'sp-awning.png',
+      [CONFIG_SHUTTER_BOTTOM_IMAGE]: 'sp-awning-bottom.png',
       [CONFIG_ROTATE_SLATS_SHUTTER_IMAGE]: true,
       [CONFIG_STRETCH_EDGE_SHUTTER_IMAGE]: false,
       [CONFIG_OFFSET_CLOSED_PCT]: 50,
@@ -453,7 +462,7 @@ var SuperproShutterCard = (function (exports) {
     },
     [ESC_CURTAIN]: {
       [CONFIG_CLOSING_DIRECTION]: RIGHT,
-      [CONFIG_SHUTTER_SLAT_IMAGE]: 'esc-curtain.png',
+      [CONFIG_SHUTTER_SLAT_IMAGE]: 'sp-curtain.png',
       [CONFIG_SHUTTER_BOTTOM_IMAGE]: '',
       [CONFIG_ROTATE_SLATS_SHUTTER_IMAGE]: false,
       [CONFIG_SHOW_TILT]: false,
@@ -467,9 +476,9 @@ var SuperproShutterCard = (function (exports) {
     },
     [ESC_BLIND]: {
       [CONFIG_CLOSING_DIRECTION]: RIGHT,
-      [CONFIG_SHUTTER_SLAT_IMAGE]: 'esc-blind.png',
+      [CONFIG_SHUTTER_SLAT_IMAGE]: 'sp-blind.png',
       [CONFIG_ROTATE_SLATS_SHUTTER_IMAGE]: false,
-      [CONFIG_WINDOW_IMAGE]: 'esc-window2.png',
+      [CONFIG_WINDOW_IMAGE]: 'sp-window2.png',
       [CONFIG_SHUTTER_BOTTOM_IMAGE]: '',
       [CONFIG_SHOW_TILT]: true,
       [CONFIG_NAME]: 'Blind',
@@ -952,10 +961,16 @@ var SuperproShutterCard = (function (exports) {
        background-blend-mode multiply with --esc-dark-frame-overlay. The blend
        only touches the parent's own background painting; children render on
        top of the blended bg with their own filter intact. */
+    /* v1.0.8: .esc-selector-picture filter is gated with :not(.esc-builtin-frame)
+       so we don't double-darken the new pre-baked sp-window-dark.png. Built-in
+       frames receive the pre-baked dark variant via the JS image swap in
+       htmlCard.showCentralWindow(); compounding that with brightness(0.45) here
+       would land at ~7% brightness (effectively black). Custom user frames keep
+       the runtime filter as their dark-mode adjustment path. */
     @media (prefers-color-scheme: dark) {
       :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_SLIDE_SLATS},
       :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_SLIDE_EDGE},
-      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_PICTURE} {
+      :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR_PICTURE}:not(.esc-builtin-frame) {
         filter: var(--esc-dark-asset-filter, brightness(0.45) contrast(1.25) saturate(0.85));
       }
       :host(:not([data-force-light="1"])) .${ESC_CLASS_SELECTOR} {
@@ -965,7 +980,7 @@ var SuperproShutterCard = (function (exports) {
     }
     :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_SLIDE_SLATS},
     :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_SLIDE_EDGE},
-    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_PICTURE} {
+    :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR_PICTURE}:not(.esc-builtin-frame) {
       filter: var(--esc-dark-asset-filter, brightness(0.45) contrast(1.25) saturate(0.85));
     }
     :host([data-force-dark="1"]) .${ESC_CLASS_SELECTOR} {
@@ -3768,12 +3783,26 @@ var SuperproShutterCard = (function (exports) {
     `;
     }
     showCentralWindow(){
+      // v1.0.8: when HA dark theme is active and the user is using one of the
+      // built-in default frames, swap the <img src> to the pre-baked dark variant
+      // (sp-window-dark.png). Custom window_image values pass through unchanged
+      // and rely on the v1.0.7 multiply-blend fallback. The pre-baked image
+      // matches Stefan's dark recipe (lightness -83% + original-frame multiply
+      // overlay) so we mark the picture container with `esc-builtin-frame` and
+      // exclude that class from the runtime dark filter on .esc-selector-picture
+      // (see SHUTTER_CSS) - applying both would compound to ~7% brightness.
+      const rawWindowSrc = this.escImages.getWindowImageSrc(this.cfg.entityId());
+      const windowSrc = this.resolveWindowImageSrc(rawWindowSrc);
+      const isBuiltinFrame = this.isBuiltinWindowImage(rawWindowSrc);
+      const pictureClass = isBuiltinFrame
+        ? `${ESC_CLASS_SELECTOR_PICTURE} esc-builtin-frame`
+        : ESC_CLASS_SELECTOR_PICTURE;
       return b`
       <div class="${ESC_CLASS_SELECTOR}">
-        <div class="${ESC_CLASS_SELECTOR_PICTURE}">
+        <div class="${pictureClass}">
 
 
-        ${this.escImages.getWindowImageSrc(this.cfg.entityId()) ? b`<img src= "${this.escImages.getWindowImageSrc(this.cfg.entityId())} ">` : ''}
+        ${windowSrc ? b`<img src= "${windowSrc} ">` : ''}
 
           ${this.showSlide()}
           ${this.cfg.partialActive()  //  show partial only if no offset is defined
@@ -3791,6 +3820,31 @@ var SuperproShutterCard = (function (exports) {
           : ''}
       </div>
     `;
+    }
+
+    // v1.0.8: dark-frame swap. Returns the pre-baked dark variant when the user
+    // is on HA dark mode AND the configured frame is one of the built-ins. The
+    // raw URL is what the image-cache resolved (image_map prefix already applied),
+    // so we recover the leaf filename via lastIndexOf('/') and substitute the
+    // dark filename while preserving the same prefix.
+    resolveWindowImageSrc(rawWindowSrc) {
+      if (!rawWindowSrc) return rawWindowSrc;
+      if (this.superproShutter?.react_DarkMode !== true) return rawWindowSrc;
+      if (!this.isBuiltinWindowImage(rawWindowSrc)) return rawWindowSrc;
+      const trimmed = rawWindowSrc.trim();
+      const slashIdx = trimmed.lastIndexOf('/');
+      const prefix = slashIdx >= 0 ? trimmed.slice(0, slashIdx + 1) : '';
+      return `${prefix}${ESC_IMAGE_WINDOW_DARK}`;
+    }
+    // True when the resolved window-image URL points at one of the built-in
+    // sp-window*.png frames we ship in dist/images/. Used both for the dark-mode
+    // src swap and for marking .esc-selector-picture so the dark filter skips it.
+    isBuiltinWindowImage(rawWindowSrc) {
+      if (!rawWindowSrc) return false;
+      const trimmed = rawWindowSrc.trim();
+      const slashIdx = trimmed.lastIndexOf('/');
+      const leaf = slashIdx >= 0 ? trimmed.slice(slashIdx + 1) : trimmed;
+      return ESC_BUILTIN_WINDOW_IMAGES.has(leaf);
     }
 
     showSlide(){
