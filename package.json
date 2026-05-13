@@ -1,5 +1,5 @@
 {
-  "name": "superpro-shutter-card",
+  "name": "everyday-shutter-card",
   "version": "1.0.8",
   "description": "Branded Home Assistant Lovelace card for animated shutter/cover control",
   "type": "module",
@@ -8,7 +8,7 @@
   "author": "Stefan Volk <stefan.volk23@gmail.com>",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/f17mkx/superpro-shutter-card-dev.git"
+    "url": "git+https://github.com/f17mkx/everyday-shutter-card-dev.git"
   },
   "scripts": {
     "build": "rollup -c",
@@ -18,8 +18,7 @@
     "test:coverage": "vitest run --coverage",
     "test:e2e": "playwright test",
     "test:e2e:install": "playwright install --with-deps chromium",
-    "lint": "eslint src/ tests/",
-    "release:sync": "bash scripts/sync-to-public.sh"
+    "lint": "eslint src/ tests/"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.1",

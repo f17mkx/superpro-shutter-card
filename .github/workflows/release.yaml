@@ -42,22 +42,22 @@ jobs:
         shell: bash
         run: |
           TAG="${{ github.event.release.tag_name }}"
-          sed -i "s/const VERSION = 'v[0-9.]\+';/const VERSION = '${TAG}';/" src/superpro-shutter-card.js
+          sed -i "s/const VERSION = 'v[0-9.]\+';/const VERSION = '${TAG}';/" src/everyday-shutter-card.js
 
       - name: Build dist/
         run: npm run build
 
       # ZIP everything under dist/ so HACS can download a single asset that
-      # drops into config/www/community/superpro-shutter-card/ as-is.
+      # drops into config/www/community/everyday-shutter-card/ as-is.
       - name: ZIP dist/
         shell: bash
         run: |
           cd dist
-          zip -r "../superpro-shutter-card.zip" .
+          zip -r "../everyday-shutter-card.zip" .
 
       - name: Upload artefacts to release
         uses: softprops/action-gh-release@v2
         with:
           files: |
-            superpro-shutter-card.zip
-            dist/superpro-shutter-card.js
+            everyday-shutter-card.zip
+            dist/everyday-shutter-card.js

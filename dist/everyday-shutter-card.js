@@ -1,4 +1,4 @@
-var SuperproShutterCard = (function (exports) {
+var EverydayShutterCard = (function (exports) {
   'use strict';
 
   /**
@@ -28,15 +28,15 @@ var SuperproShutterCard = (function (exports) {
    */const s=globalThis;class i extends y$1{constructor(){super(...arguments),this.renderOptions={host:this},this._$Do=void 0;}createRenderRoot(){const t=super.createRenderRoot();return this.renderOptions.renderBefore??=t.firstChild,t}update(t){const r=this.render();this.hasUpdated||(this.renderOptions.isConnected=this.isConnected),super.update(t),this._$Do=D(r,this.renderRoot,this.renderOptions);}connectedCallback(){super.connectedCallback(),this._$Do?.setConnected(true);}disconnectedCallback(){super.disconnectedCallback(),this._$Do?.setConnected(false);}render(){return E}}i._$litElement$=true,i["finalized"]=true,s.litElementHydrateSupport?.({LitElement:i});const o=s.litElementPolyfillSupport;o?.({LitElement:i});(s.litElementVersions??=[]).push("4.2.2");
 
   // Lit 3.x comes from the npm package now; Rollup inlines it into the IIFE
-  // bundle that lands in dist/superpro-shutter-card.js. The pre-v0.5 layout
+  // bundle that lands in dist/everyday-shutter-card.js. The pre-v0.5 layout
   // shipped lit-core.min.js as a sibling file under dist/lit/ - that
   // directory is gone post-v0.5 because the bundle is self-contained.
 
   const VERSION = 'v1.0.8';
 
 
-  const HA_CARD_NAME = "superpro-shutter-card";
-  const HA_SHUTTER_NAME = `superpro-shutter`;
+  const HA_CARD_NAME = "everyday-shutter-card";
+  const HA_SHUTTER_NAME = `everyday-shutter`;
   const HA_HUI_VIEW = 'hui-view';
   const SPACE = ' ';
 
@@ -1003,7 +1003,7 @@ var SuperproShutterCard = (function (exports) {
    * updateComplete
    */
 
-  // Pure config-merge logic extracted from SuperproShutterCardNew#buildConfig so
+  // Pure config-merge logic extracted from EverydayShutterCardNew#buildConfig so
   // it can be unit-tested without instantiating the LitElement. Behaviour is
   // byte-equivalent to the original private method - the class now delegates
   // here. messageCollector is invoked with (text, level, entityId) so callers
@@ -1068,7 +1068,7 @@ var SuperproShutterCard = (function (exports) {
   }
 
   // Pure helper: percent -> tilt rotateX deg. Mirrors
-  // SuperproShutter#getTiltAngle: linearly interpolate between min and max,
+  // EverydayShutter#getTiltAngle: linearly interpolate between min and max,
   // then negate (CSS rotateX direction). Extracted so we can lock the
   // transform in tests without booting Lit.
   function tiltAngleDeg(sliderPosition, tiltAngleMin = 0, tiltAngleMax = 180) {
@@ -1085,7 +1085,7 @@ var SuperproShutterCard = (function (exports) {
     return pos;
   }
 
-  class SuperproShutterCardNew extends i{
+  class EverydayShutterCardNew extends i{
     //reactive properties
     static properties = {
       // reactive variables from Home Assistant Card
@@ -1158,7 +1158,7 @@ var SuperproShutterCard = (function (exports) {
             /* On hass update, check if there is a cover change */
               const liveStates = this[propName].states;
 
-              // v1.0.4: hass.themes.darkMode is propagated to inner <superpro-shutter>
+              // v1.0.4: hass.themes.darkMode is propagated to inner <everyday-shutter>
               // via the .react_DarkMode reactive property in render(). The inner
               // element reflects it to data-force-dark="1" on its own host so the
               // v0.2 :host([data-force-dark="1"]) CSS rule (which lives in the inner
@@ -1245,7 +1245,7 @@ var SuperproShutterCard = (function (exports) {
                 this.localCfgs[entityId].setSignalEntity(this.hass,currEntity.signal_entity);
 
                 return b`
-                  <superpro-shutter
+                  <everyday-shutter
                     .react_ShutterState=${this.localCfgs[entityId].shutterState}
                     .react_BatteryState=${this.localCfgs[entityId].batteryState}
                     .react_SignalState=${this.localCfgs[entityId].signalState}
@@ -1257,7 +1257,7 @@ var SuperproShutterCard = (function (exports) {
                     .cfg=${this.localCfgs[entityId]}
                     .escImages=${this.escImages}
                   >
-                  </superpro-shutter>
+                  </everyday-shutter>
                   ${showMessages ? b`${this.messageManager.displayGroupMessages(entityId)} ` : ''}
                   <div class="${ESC_CLASS_SHUTTER_SEPERATE}"></div>
                 `;              }
@@ -1694,7 +1694,7 @@ var SuperproShutterCard = (function (exports) {
       return {
         "entities": [{
           "entity": entityId,
-          "name": "My First Superpro Shutter Card",
+          "name": "My First Everyday Shutter Card",
           "top_offset_pct": 13,
           "button_up_hide_states": [
             SHUTTER_STATE_OPEN,
@@ -1717,9 +1717,9 @@ var SuperproShutterCard = (function (exports) {
   }
 
 
-  class SuperproShutter extends i
+  class EverydayShutter extends i
   {
-    // loaded from SuperproShutterCardNew():
+    // loaded from EverydayShutterCardNew():
     // - react_ShutterState
     // - react_BatteryState
     // - react_SignalState
@@ -2625,7 +2625,7 @@ var SuperproShutterCard = (function (exports) {
     }
     // v0.4 i18n: refresh the live hass reference (and its localize fn) so that a
     // user toggling HA's language setting at runtime re-renders the card in the
-    // new locale without page reload. Called from SuperproShutterCardNew's
+    // new locale without page reload. Called from EverydayShutterCardNew's
     // shouldUpdate() when propName === 'hass'. Also covers the case where HA
     // swaps the hass object entirely (e.g. on reconnect) - the previous object's
     // localize() closure could be stale, this rebinds.
@@ -3535,14 +3535,14 @@ var SuperproShutterCard = (function (exports) {
 
   class htmlCard{
 
-    constructor(superproShutter,positionText){
-      this.superproShutter=superproShutter;
-      this.cfg =superproShutter.cfg;
+    constructor(everydayShutter,positionText){
+      this.everydayShutter=everydayShutter;
+      this.cfg =everydayShutter.cfg;
       this.positionText =positionText;
-      this.actualScreenPosition = superproShutter.actualScreenPosition;
-      this.actualTiltPosition = superproShutter.actualTiltPosition;
-      this.escImages= superproShutter.escImages;
-      this.cfg = superproShutter.cfg;
+      this.actualScreenPosition = everydayShutter.actualScreenPosition;
+      this.actualTiltPosition = everydayShutter.actualTiltPosition;
+      this.escImages= everydayShutter.escImages;
+      this.cfg = everydayShutter.cfg;
     }
 
     defStyleVars(){
@@ -3558,7 +3558,7 @@ var SuperproShutterCard = (function (exports) {
       --mdc-icon-size: ${this.cfg.iconSize()}${UNITY};
       --icon-size-wifi-battery: ${this.cfg.iconSizeWifiBattery()}${UNITY};
 
-      --esc-overflow: ${this.superproShutter.getOverflow()};
+      --esc-overflow: ${this.everydayShutter.getOverflow()};
 
       --esc-display-name-top: ${this.cfg.displayName(TOP)};
       --esc-display-name-bottom: ${this.cfg.displayName(BOTTOM)};
@@ -3573,31 +3573,31 @@ var SuperproShutterCard = (function (exports) {
       --esc-window-rotate: ${this.cfg.viewImageRotate()};
       --esc-button-rotate: ${this.cfg.buttonRotate()};
 
-      --esc-transform-slide:  ${this.superproShutter.transformSlide(this.actualScreenPosition)};
-      --esc-transform-picker: ${this.superproShutter.transformPicker(this.actualScreenPosition)};
-      --esc-tilt-angle-deg: ${this.superproShutter.getTiltAngleDeg(this.superproShutter.react_TiltPosition)};
-      --esc-tilt-angle-deg-graph: ${this.superproShutter.getTiltAngleDegGraph(this.superproShutter.react_TiltPosition)};
+      --esc-transform-slide:  ${this.everydayShutter.transformSlide(this.actualScreenPosition)};
+      --esc-transform-picker: ${this.everydayShutter.transformPicker(this.actualScreenPosition)};
+      --esc-tilt-angle-deg: ${this.everydayShutter.getTiltAngleDeg(this.everydayShutter.react_TiltPosition)};
+      --esc-tilt-angle-deg-graph: ${this.everydayShutter.getTiltAngleDegGraph(this.everydayShutter.react_TiltPosition)};
 
-      --esc-transform-undo-slats-rotate:  ${this.superproShutter.transformUndoSlatsRotate()};
-      --esc-transform-tilt-slat-rotate:  ${this.superproShutter.transformTiltSlatRotate()};
-      --esc-transform-movement: ${this.superproShutter.transformMovement()};
+      --esc-transform-undo-slats-rotate:  ${this.everydayShutter.transformUndoSlatsRotate()};
+      --esc-transform-tilt-slat-rotate:  ${this.everydayShutter.transformTiltSlatRotate()};
+      --esc-transform-movement: ${this.everydayShutter.transformMovement()};
 
       --esc-picker-top: -${this.cfg.pickerOverlapPx()+UNITY};
       --esc-picker-height: ${this.cfg.pickerOverlapPx()*2+UNITY};
 
-      --esc-slat-height: ${this.superproShutter.slatHeightPx()+UNITY};
+      --esc-slat-height: ${this.everydayShutter.slatHeightPx()+UNITY};
 
-      --esc-tilt-slat-height: ${this.superproShutter.tiltSlatHeightPx()+UNITY};
-      --esc-tilt-slat-width: ${this.superproShutter.tiltSlatWidthPx()};
-      --esc-tilt-slat-origin: ${this.superproShutter.tiltSlatOrigin()};
-      --esc-tilt-slat-background-size: ${this.superproShutter.tiltSlatBackgroundSize()};
-      --esc-tilt-slider-rotate: ${this.superproShutter.tiltSliderRotate()};
-      --esc-tilt-icon-rotate: ${(this.superproShutter.tiltIconRotate3())};
+      --esc-tilt-slat-height: ${this.everydayShutter.tiltSlatHeightPx()+UNITY};
+      --esc-tilt-slat-width: ${this.everydayShutter.tiltSlatWidthPx()};
+      --esc-tilt-slat-origin: ${this.everydayShutter.tiltSlatOrigin()};
+      --esc-tilt-slat-background-size: ${this.everydayShutter.tiltSlatBackgroundSize()};
+      --esc-tilt-slider-rotate: ${this.everydayShutter.tiltSliderRotate()};
+      --esc-tilt-icon-rotate: ${(this.everydayShutter.tiltIconRotate3())};
 
-      --esc-slide-slats-height: ${this.superproShutter.slatsSlideHeightPx()+UNITY};
-      --esc-slide-edge-height: ${this.superproShutter.shutterBottomSize().y+UNITY};
+      --esc-slide-slats-height: ${this.everydayShutter.slatsSlideHeightPx()+UNITY};
+      --esc-slide-edge-height: ${this.everydayShutter.shutterBottomSize().y+UNITY};
 
-      --esc-transform-partial: ${this.superproShutter.transformPartial()};
+      --esc-transform-partial: ${this.everydayShutter.transformPartial()};
 
       --esc-buttons-flex-flow: ${!this.cfg.buttonsInRow() ? 'row' : 'column'} nowrap;
       --esc-buttons-flex-flow2: ${!this.cfg.buttonsInRow() ? 'row-reverse' : 'column'} nowrap;
@@ -3612,12 +3612,12 @@ var SuperproShutterCard = (function (exports) {
       --esc-slide-background-main-color: ${shutterSlatImage.includes('.') ? '' : `${shutterSlatImage}`};
       --esc-slide-background-edge-color: ${shutterBottomImage.includes('.') ? '' : `${shutterBottomImage}`};
 
-      --esc-slide-background-slat-size: ${this.superproShutter.shutterSlatSizePercentage()};
-      --esc-slide-background-slats-size: ${this.superproShutter.shutterSlatsSizePercentage()};
-      --esc-slide-background-edge-size: ${this.superproShutter.shutterBottomSizePercentage()};
+      --esc-slide-background-slat-size: ${this.everydayShutter.shutterSlatSizePercentage()};
+      --esc-slide-background-slats-size: ${this.everydayShutter.shutterSlatsSizePercentage()};
+      --esc-slide-background-edge-size: ${this.everydayShutter.shutterBottomSizePercentage()};
 
-      --esc-slide-background-main-position: ${this.superproShutter.shutterMainBackgroundPosition()};
-      --esc-slide-background-edge-position: ${this.superproShutter.shutterEdgeBackgroundPosition()};
+      --esc-slide-background-main-position: ${this.everydayShutter.shutterMainBackgroundPosition()};
+      --esc-slide-background-edge-position: ${this.everydayShutter.shutterEdgeBackgroundPosition()};
 
       --esc-top-right-color: ${this.cfg.signalIconColor()};
       --esc-top-left-color: ${this.cfg.batteryIconColor()};
@@ -3627,7 +3627,7 @@ var SuperproShutterCard = (function (exports) {
       --esc-text-scale: ${this.cfg.textScaleFactor()};
       --esc-button-scale: ${this.cfg.buttonScaleFactor()};
 
-      --esc-selector-flex-basis: ${this.cfg.buttonsInRow() ? this.superproShutter.actualGlobalWidthPx():this.superproShutter.actualGlobalHeightPx()}${UNITY};
+      --esc-selector-flex-basis: ${this.cfg.buttonsInRow() ? this.everydayShutter.actualGlobalWidthPx():this.everydayShutter.actualGlobalHeightPx()}${UNITY};
 `;
     }
 
@@ -3678,7 +3678,7 @@ var SuperproShutterCard = (function (exports) {
       return b`
         <div class="${escClassName}">
           <div class="${ESC_CLASS_LABEL} ${this.cfg.disabledGlobaly() ? `${ESC_CLASS_LABEL_DISABLED}` : ''}"
-            @click="${() => this.superproShutter.doHassMoreInfoOpen(this.cfg.entityId())}"
+            @click="${() => this.everydayShutter.doHassMoreInfoOpen(this.cfg.entityId())}"
           >
             ${this.cfg.friendlyName()}
             ${this.cfg.passiveMode() ? b`
@@ -3716,7 +3716,7 @@ var SuperproShutterCard = (function (exports) {
           label="${this.cfg.getLocalize(LOCALIZE_TEXT[this.cfg.applyInvertForShowButtonUpDownLabel(action)])}"
           aria-label="${this.cfg.getLocalize(LOCALIZE_TEXT[this.cfg.applyInvertForShowButtonUpDownLabel(action)])}"
           .disabled=${this.cfg.disabledGlobaly() || this.cfg.coverButtonDisabled(upDown)}
-          @click=${()=> this.superproShutter.doOnclick(`${this.cfg.applyInvertForShowButtonUpDownClick(action,true)}`)} >
+          @click=${()=> this.everydayShutter.doOnclick(`${this.cfg.applyInvertForShowButtonUpDownClick(action,true)}`)} >
           <ha-icon
             class="${ESC_CLASS_HA_ICON}"
             icon="${icon}"
@@ -3742,7 +3742,7 @@ var SuperproShutterCard = (function (exports) {
           label="${this.cfg.getLocalize(LOCALIZE_TEXT[action])}"
           aria-label="${this.cfg.getLocalize(LOCALIZE_TEXT[action])}"
           .disabled=${this.cfg.disabledGlobaly()}
-          @click=${()=> this.superproShutter.doOnclick(`${action}`)} >
+          @click=${()=> this.everydayShutter.doOnclick(`${action}`)} >
           <ha-icon
             class="${ESC_CLASS_HA_ICON}"
             icon="${icon}"
@@ -3761,7 +3761,7 @@ var SuperproShutterCard = (function (exports) {
             label="${this.cfg.getT(`partially_${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)}`)} (${this.cfg.formatPercent(SHUTTER_OPEN_PCT - this.cfg.partial())})"
             aria-label="${this.cfg.getT(`partially_${this.cfg.applyInvertOpenClose(SHUTTER_STATE_CLOSED)}`)} (${this.cfg.formatPercent(SHUTTER_OPEN_PCT - this.cfg.partial())})"
             .disabled=${this.cfg.disabledGlobaly()}
-            @click="${()=> this.superproShutter.doOnclick(`${ACTION_SHUTTER_SET_POS}`, this.cfg.calcOffset(this.cfg.partial()))}" >
+            @click="${()=> this.everydayShutter.doOnclick(`${ACTION_SHUTTER_SET_POS}`, this.cfg.calcOffset(this.cfg.partial()))}" >
             <ha-icon class="${ESC_CLASS_HA_ICON}" icon="mdi:arrow-expand-vertical" aria-hidden="true"></ha-icon>
           </ha-icon-button>
         ` : ''}
@@ -3829,7 +3829,7 @@ var SuperproShutterCard = (function (exports) {
     // dark filename while preserving the same prefix.
     resolveWindowImageSrc(rawWindowSrc) {
       if (!rawWindowSrc) return rawWindowSrc;
-      if (this.superproShutter?.react_DarkMode !== true) return rawWindowSrc;
+      if (this.everydayShutter?.react_DarkMode !== true) return rawWindowSrc;
       if (!this.isBuiltinWindowImage(rawWindowSrc)) return rawWindowSrc;
       const trimmed = rawWindowSrc.trim();
       const slashIdx = trimmed.lastIndexOf('/');
@@ -3857,7 +3857,7 @@ var SuperproShutterCard = (function (exports) {
     }
     showSlideSlats(){
       // Only Tilt when SHowTilt and there is a size
-      const output = this.cfg.showTilt() && this.superproShutter.canShowTilt()
+      const output = this.cfg.showTilt() && this.everydayShutter.canShowTilt()
        ? b`
         ${this.showSlatsTilt()}
       `
@@ -3868,8 +3868,8 @@ var SuperproShutterCard = (function (exports) {
     }
     showSlatsTilt(){
 
-      const sizeSlide = this.superproShutter.windowSizeMovingDirectionPx();
-      const sizeSlat = this.superproShutter.slatSizeMovingDirectionPx() ;
+      const sizeSlide = this.everydayShutter.windowSizeMovingDirectionPx();
+      const sizeSlat = this.everydayShutter.slatSizeMovingDirectionPx() ;
 
       //const sizeSlat = new xyPair(100,51);
       const number = sizeSlat ? Math.ceil(sizeSlide / sizeSlat): 1;
@@ -3944,7 +3944,7 @@ var SuperproShutterCard = (function (exports) {
         2: this.cfg.disabledGlobaly() || this.cfg.coverButtonDownDisabled(), // down
       };
       const click = Object.fromEntries(
-        [0, 1, 2, 3, 4, 5].map(j => [j, () => this.superproShutter.doOnclick(`${ACTION_SHUTTER_SET_POS}`, this.cfg.calcOffset(pct[j]))])
+        [0, 1, 2, 3, 4, 5].map(j => [j, () => this.everydayShutter.doOnclick(`${ACTION_SHUTTER_SET_POS}`, this.cfg.calcOffset(pct[j]))])
       );
 
       return b`
@@ -4017,7 +4017,7 @@ var SuperproShutterCard = (function (exports) {
             label="${this.cfg.getLocalize(LOCALIZE_TEXT[action])}"
             aria-label="${this.cfg.getLocalize(LOCALIZE_TEXT[action])}"
             .disabled=${this.cfg.disabledGlobaly()}
-            @click="${()=> this.superproShutter.doOnclick(`${action}`)}">
+            @click="${()=> this.everydayShutter.doOnclick(`${action}`)}">
             <ha-icon class="${ESC_CLASS_HA_ICON_TILT}" icon="${icon}" aria-hidden="true"></ha-icon>
           </ha-icon-button>
     `;
@@ -4098,9 +4098,9 @@ var SuperproShutterCard = (function (exports) {
       }
       this.messageGroup[subject].messages.push(message);
       if (type == 'warning' || type == 'error'){
-        console.warn(`Superpro Shutter Card (${subject}): "${message.text}"`);
+        console.warn(`Everyday Shutter Card (${subject}): "${message.text}"`);
   //    }else{
-  //      console.info(`Superpro Shutter Card (${subject}): "${message.text}"`);
+  //      console.info(`Everyday Shutter Card (${subject}): "${message.text}"`);
       }
     }
 
@@ -4316,20 +4316,20 @@ var SuperproShutterCard = (function (exports) {
     screenOrientation: {value:LANDSCAPE},
   };
 
-  customElements.define(HA_CARD_NAME, SuperproShutterCardNew);
-  customElements.define(HA_SHUTTER_NAME, SuperproShutter);
+  customElements.define(HA_CARD_NAME, EverydayShutterCardNew);
+  customElements.define(HA_SHUTTER_NAME, EverydayShutter);
 
   window.customCards = window.customCards || [];
   window.customCards.push({
-    type: "superpro-shutter-card",
-    name: "Superpro Shutter Card",
+    type: "everyday-shutter-card",
+    name: "Everyday Shutter Card",
     preview: true,
     description: "A rebranded shutter card for easy control of shutters (fork of enhanced-shutter-card)",
-    documentationURL: "https://github.com/f17mkx/superpro-shutter-card"
+    documentationURL: "https://github.com/f17mkx/everyday-shutter-card"
   });
 
   console.info(
-    `%c SUPERPRO-SHUTTER-CARD %c Version ${VERSION}`,
+    `%c EVERYDAY-SHUTTER-CARD %c Version ${VERSION}`,
     'color: white; background: green; font-weight: 700',
     'color: black;background: white; font-weight: bold'
   );

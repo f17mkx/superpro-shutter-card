@@ -1,8 +1,8 @@
-# superpro-shutter-card
+# everyday-shutter-card
 
 > Branded Home Assistant Lovelace card for animated shutter/cover control. First-class dark-mode theming, accessibility, and internationalisation.
 
-![Superpro Shutter Card](example.png)
+![Everyday Shutter Card](example.png)
 
 **Status**: v1.0 - HACS default store
 **Upstream base**: [marcelhoogantink/enhanced-shutter-card](https://github.com/marcelhoogantink/enhanced-shutter-card) @ v1.5.2
@@ -13,16 +13,16 @@
 ### Via HACS (recommended)
 
 1. Open HACS in Home Assistant
-2. Search for "Superpro Shutter Card"
+2. Search for "Everyday Shutter Card"
 3. Download
 4. Restart HA (or refresh resources)
 
 ### Manual
 
-Drop `dist/superpro-shutter-card.js` into `<config>/www/community/superpro-shutter-card/`, then add it as a Lovelace resource:
+Drop `dist/everyday-shutter-card.js` into `<config>/www/community/everyday-shutter-card/`, then add it as a Lovelace resource:
 
 ```yaml
-url: /hacsfiles/superpro-shutter-card/superpro-shutter-card.js
+url: /hacsfiles/everyday-shutter-card/everyday-shutter-card.js
 type: module
 ```
 
@@ -30,11 +30,11 @@ type: module
 
 HACS for Lovelace plugins downloads only the JS file, not the `images/` subfolder. If shutter cards render with broken/missing graphics, you have two options:
 
-1. **Manual extract** - download `superpro-shutter-card.zip` from the latest release and extract into `<config>/www/community/superpro-shutter-card/`. The `images/` folder lands next to the JS.
+1. **Manual extract** - download `everyday-shutter-card.zip` from the latest release and extract into `<config>/www/community/everyday-shutter-card/`. The `images/` folder lands next to the JS.
 2. **Reuse `enhanced-shutter-card` images** if you have it installed - per-card config:
 
 ```yaml
-type: custom:superpro-shutter-card
+type: custom:everyday-shutter-card
 image_map: /local/community/enhanced-shutter-card/images
 entities:
   - entity: cover.your_shutter
@@ -45,16 +45,16 @@ Future versions will inline the assets so this step goes away.
 ### Use it in your Lovelace YAML
 
 ```yaml
-type: custom:superpro-shutter-card
+type: custom:everyday-shutter-card
 entities:
   - entity: cover.your_shutter
 ```
 
-For full configuration options see the upstream [enhanced-shutter-card docs](https://github.com/marcelhoogantink/enhanced-shutter-card#configuration) - all YAML options are forward-compatible; only the `type:` prefix changes from `custom:enhanced-shutter-card` to `custom:superpro-shutter-card`.
+For full configuration options see the upstream [enhanced-shutter-card docs](https://github.com/marcelhoogantink/enhanced-shutter-card#configuration) - all YAML options are forward-compatible; only the `type:` prefix changes from `custom:enhanced-shutter-card` to `custom:everyday-shutter-card`.
 
 ## Why this fork
 
-`enhanced-shutter-card` is the active fork of the classic `Deejayfool/hass-shutter-card` and already covers the functional baseline. `superpro-shutter-card` adds signature features that would be scope-creep upstream:
+`enhanced-shutter-card` is the active fork of the classic `Deejayfool/hass-shutter-card` and already covers the functional baseline. `everyday-shutter-card` adds signature features that would be scope-creep upstream:
 
 1. **True dark-mode theming** - SVG slats + CSS-vars from HA theme, not hardcoded hex PNGs
 2. **Accessibility** - ARIA labels on all buttons, position announcements, keyboard focus
@@ -97,7 +97,7 @@ The card is now navigable by keyboard, announces position changes politely to sc
 | ARIA labels | Up / Stop / Down / Tilt / Partial / position-grid buttons each carry `aria-label` mirroring the localised tooltip; decorative icons are `aria-hidden="true"` |
 | Live region | A visually-hidden `role="status" aria-live="polite"` element announces "{Friendly name}: {position text}" on settled-state changes, debounced 500ms so dragging or rapid streams don't spam |
 | Lock indicator | `passive_mode: true` renders the lock icon with `role="img" aria-label="locked"` |
-| Console hygiene | The two upstream warnings „Could not find div.card" and „Could not find grid container" are now silently no-op'd in panel layouts where they're expected. Set `SILENCE = false` at the top of `dist/superpro-shutter-card.js` to bring them back for debugging |
+| Console hygiene | The two upstream warnings „Could not find div.card" and „Could not find grid container" are now silently no-op'd in panel layouts where they're expected. Set `SILENCE = false` at the top of `dist/everyday-shutter-card.js` to bring them back for debugging |
 | Group label | Each shutter is wrapped in `role="group" aria-label="{Friendly name}"` so screen readers can navigate by entity |
 
 Tested manually with macOS VoiceOver against an HA dashboard. v0.5's Playwright harness will codify this as automated regression coverage.
@@ -116,7 +116,7 @@ The card follows your HA UI language automatically: switch HA to Deutsch, Franç
 
 #### Contributing a new locale
 
-1. Open `dist/superpro-shutter-card.js`, find the `TRANSLATIONS` const (just below `LOCALIZE_TEXT`).
+1. Open `dist/everyday-shutter-card.js`, find the `TRANSLATIONS` const (just below `LOCALIZE_TEXT`).
 2. Add a new top-level entry keyed by ISO 639-1 lowercase code (e.g. `it`, `nl`, `pt`).
 3. Translate all keys present in the `en` block - the lookup is `TRANSLATIONS[lang]?.[key] ?? TRANSLATIONS.en?.[key]`, so any missing key silently falls back to English (graceful, but you do want full coverage).
 4. Test locally: change HA → Profile → Language to your new locale, reload the dashboard, eyeball each shutter card.
@@ -126,18 +126,18 @@ A future v0.6+ release will split these into `translations/<lang>.json` files be
 
 ## Development
 
-v0.5 introduced a proper toolchain: source lives in `src/`, Rollup bundles it into `dist/superpro-shutter-card.js` (Lit 3.x inlined), and CI runs the full test suite on every PR.
+v0.5 introduced a proper toolchain: source lives in `src/`, Rollup bundles it into `dist/everyday-shutter-card.js` (Lit 3.x inlined), and CI runs the full test suite on every PR.
 
 ```bash
 npm install         # one-time
-npm run build       # src/ -> dist/superpro-shutter-card.js (IIFE, ~165KB)
+npm run build       # src/ -> dist/everyday-shutter-card.js (IIFE, ~165KB)
 npm test            # vitest unit suite (60+ tests on pure logic)
 npm run test:e2e    # playwright smoke against an HA-stub HTML page
 ```
 
 `dist/` is committed - HACS users grab it raw, no install step on their side. CI rebuilds and byte-compares against the committed copy to catch drift (see `scripts/check-dist-drift.mjs`).
 
-To iterate against a live HA instance: `npm run build`, then `scp dist/superpro-shutter-card.js dist/images/* hassio:/config/www/community/superpro-shutter-card/` and reload.
+To iterate against a live HA instance: `npm run build`, then `scp dist/everyday-shutter-card.js dist/images/* hassio:/config/www/community/everyday-shutter-card/` and reload.
 
 ## Credits
 
@@ -145,7 +145,7 @@ Upstream lineage:
 
 - `Deejayfool/hass-shutter-card` - original card (2022-)
 - `marcelhoogantink/enhanced-shutter-card` - active fork with Tilt + presets (2024-, GPL-3.0)
-- `f17mkx/superpro-shutter-card` - this branded fork adding signature features (2026-, GPL-3.0)
+- `f17mkx/everyday-shutter-card` - this branded fork adding signature features (2026-, GPL-3.0)
 
 ## License
 

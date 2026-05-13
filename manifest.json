@@ -1,8 +1,8 @@
 {
-  "domain": "superpro-shutter-card",
-  "name": "Superpro Shutter Card",
+  "domain": "everyday-shutter-card",
+  "name": "Everyday Shutter Card",
   "codeowners": ["@f17mkx"],
-  "documentation": "https://github.com/f17mkx/superpro-shutter-card/blob/main/README.md",
-  "issue_tracker": "https://github.com/f17mkx/superpro-shutter-card/issues",
+  "documentation": "https://github.com/f17mkx/everyday-shutter-card/blob/main/README.md",
+  "issue_tracker": "https://github.com/f17mkx/everyday-shutter-card/issues",
   "version": "1.0.8"
 }
