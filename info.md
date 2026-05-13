@@ -1,30 +1,46 @@
 # Everyday Shutter Card
 
-A branded Home Assistant Lovelace card for animated shutter and cover control. Fork of [enhanced-shutter-card](https://github.com/marcelhoogantink/enhanced-shutter-card) with first-class dark-mode theming, accessibility, internationalisation, and a real test harness.
+Animated Lovelace shutter / cover card for Home Assistant. HA-theme-aware dark mode, full ARIA accessibility, DE / EN / FR / ES locale support, tilt + position grid + presets. Drop-in for `enhanced-shutter-card`.
+
+![Everyday Shutter Card preview](assets/example.png)
 
 ## What you get
 
-- **Dark-mode native** - all colors route through HA theme tokens, PNG slat assets get a brightness/contrast filter under `prefers-color-scheme: dark` so they stop glowing like lightboxes on dark dashboards.
-- **Accessible** - ARIA labels on every button, polite live-region position announcements, visible keyboard focus ring, clean console output in panel-view dashboards.
-- **Localised** - DE / EN / FR / ES out of the box, follows `hass.locale.language` reactively (no reload needed).
-- **Tested** - 60+ Vitest unit tests on pure logic, Playwright smoke against an HA-stub HTML page, byte-compare drift guard against the committed `dist/`.
-- **Drop-in replacement for `enhanced-shutter-card`** - same YAML config, only the `type:` prefix changes from `custom:enhanced-shutter-card` to `custom:everyday-shutter-card`.
+- **HA-theme-aware dark mode** — detects `hass.themes.darkMode` AND `prefers-color-scheme: dark`, applies a per-asset filter so the slat PNGs stop glowing on dark dashboards.
+- **Tilt visualisation** — slat angle rendered in real time, drag-to-set, separate from position.
+- **Position grid** — six preset positions (0 / 20 / 40 / 60 / 80 / 100 %) for one-tap recall.
+- **Cover presets** — `roller-shutter`, `curtain`, `awning`, `blind`, `shade`, each with its own PNG assets.
+- **Full ARIA** — every button labelled, live-region position announcements, focus ring, lock indicator.
+- **Localised** — DE / EN / FR / ES, reactive on language switch, locale-correct percent formatting.
+- **Drop-in for enhanced-shutter-card** — same YAML config, only the `type:` prefix changes.
 
-## Install
-
-After installing via HACS, add the resource and use the card in your Lovelace dashboard:
+## Quick start
 
 ```yaml
 type: custom:everyday-shutter-card
 entities:
-  - entity: cover.your_shutter
+  - entity: cover.bedroom_shutter
 ```
 
-For full configuration options (tilt, presets, multi-shutter rows, position grid, partial-open buttons), see the [README](https://github.com/f17mkx/everyday-shutter-card#readme) and the upstream [enhanced-shutter-card configuration docs](https://github.com/marcelhoogantink/enhanced-shutter-card#configuration) - all YAML keys are forward-compatible.
+Multiple shutters:
 
-## Theme overrides
+```yaml
+type: custom:everyday-shutter-card
+entities:
+  - entity: cover.bedroom_shutter
+  - entity: cover.living_room_shutter
+```
 
-The card honours these CSS custom properties; set them in your HA theme YAML to override defaults:
+Awning preset:
+
+```yaml
+type: custom:everyday-shutter-card
+entities:
+  - entity: cover.terrace_awning
+    preset: awning
+```
+
+## Theme override tokens
 
 | Property | Default | Purpose |
 |---|---|---|
@@ -32,9 +48,10 @@ The card honours these CSS custom properties; set them in your HA theme YAML to 
 | `--esc-tilt-container-border` | `var(--divider-color, grey)` | Tilt widget border |
 | `--esc-tilt-line-color` | `var(--error-color, red)` | Tilt-angle indicator line |
 | `--esc-movement-overlay-bg` | `rgba(0,0,0,0.3)` | "Shutter moving" overlay tint |
-| `--esc-dark-asset-filter` | `brightness(0.82) contrast(1.08) saturate(0.92)` | CSS filter applied to legacy PNG assets in dark mode |
+| `--esc-dark-asset-filter` | `brightness(0.82) contrast(1.08) saturate(0.92)` | CSS filter on legacy PNG slats under dark mode |
+| `--esc-dark-frame-overlay` | `rgb(115, 115, 115)` | Window-frame dark-mode multiply overlay |
 
-Opt out per-card with `data-force-light="1"`, force on with `data-force-dark="1"`.
+Per-card overrides: `data-force-light="1"` (disable dark filter) or `data-force-dark="1"` (force it on).
 
 ## Migration from enhanced-shutter-card
 
@@ -48,16 +65,16 @@ type: custom:everyday-shutter-card
 
 That's the entire migration. All other YAML keys carry over identically.
 
-## Credits
-
-- [Deejayfool/hass-shutter-card](https://github.com/Deejayfool/hass-shutter-card) - original card
-- [marcelhoogantink/enhanced-shutter-card](https://github.com/marcelhoogantink/enhanced-shutter-card) - active fork with Tilt + presets
-- [f17mkx/everyday-shutter-card](https://github.com/f17mkx/everyday-shutter-card) - this branded fork
-
-GPL-3.0-or-later throughout.
-
 ## Links
 
 - [Source + issues](https://github.com/f17mkx/everyday-shutter-card)
-- [Changelog](https://github.com/f17mkx/everyday-shutter-card/blob/main/docs/CHANGELOG.md)
 - [Releases](https://github.com/f17mkx/everyday-shutter-card/releases)
+- [Buy Me a Coffee](https://www.buymeacoffee.com/f17mkx) — support the next card in the everyday-* family
+
+## Credits
+
+- [`Deejayfool/hass-shutter-card`](https://github.com/Deejayfool/hass-shutter-card) — original card
+- [`marcelhoogantink/enhanced-shutter-card`](https://github.com/marcelhoogantink/enhanced-shutter-card) — active fork with Tilt + presets
+- [`f17mkx/everyday-shutter-card`](https://github.com/f17mkx/everyday-shutter-card) — this branded fork
+
+GPL-3.0-or-later throughout.

@@ -32,7 +32,7 @@ var EverydayShutterCard = (function (exports) {
   // shipped lit-core.min.js as a sibling file under dist/lit/ - that
   // directory is gone post-v0.5 because the bundle is self-contained.
 
-  const VERSION = 'v1.0.8';
+  const VERSION = 'v1.0.9';
 
 
   const HA_CARD_NAME = "everyday-shutter-card";
